@@ -42,7 +42,7 @@ port: 8080
 
 ### 5. Article 操作[需要经过 jwt 验证]
 
-### 6. ImageItem 操作
+### 6. ImageItem 操作[需要经过 jwt 验证]
 ## Notes
 
 routing  中有关 pipeline 的 intercept 

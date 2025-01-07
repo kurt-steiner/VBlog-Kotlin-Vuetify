@@ -23,21 +23,21 @@ fun Application.routeImage() {
 
     routing {
         route("/image") {
-            get("/download/{id}") {
-                val id = call.pathParameters.getOrFail<Int>("id")
-                val imageItem = imageItemService.findOne(id)
-                    ?: throw BadRequestException("no such image item with id $id")
+            authenticate("auth-jwt") {
+                get("/download/{id}") {
+                    val id = call.pathParameters.getOrFail<Int>("id")
+                    val imageItem = imageItemService.findOne(id)
+                        ?: throw BadRequestException("no such image item with id $id")
 
-                val file = File(imageItem.path)
+                    val file = File(imageItem.path)
 
-                if (!file.exists()) {
-                    throw FileNotFoundException("file not exist")
+                    if (!file.exists()) {
+                        throw FileNotFoundException("file not exist")
+                    }
+
+                    call.respondFile(file)
                 }
 
-                call.respondFile(file)
-            }
-
-            authenticate("auth-jwt") {
                 post("/upload") {
                     val multipartData = call.receiveMultipart()
 

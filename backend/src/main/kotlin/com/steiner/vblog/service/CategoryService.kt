@@ -12,10 +12,6 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class CategoryService(val database: Database) {
-    companion object {
-        const val CATEGORY_DEFAULT_NAME = "default"
-    }
-
     init {
         transaction(database) {
             SchemaUtils.create(Categories)
@@ -93,9 +89,9 @@ class CategoryService(val database: Database) {
         }
     }
 
-    suspend fun findAll(): List<Category> = dbQuery(database) {
+    suspend fun findAll(userId: Int): List<Category> = dbQuery(database) {
         with (Categories) {
-            selectAll().map {
+            selectAll().where(this.userId eq userId).map {
                 findOne(it[id].value)!!
             }
         }

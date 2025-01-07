@@ -108,6 +108,8 @@ class ArticleService(val database: Database): KoinComponent {
                     it[categoryId] = request.categoryId
                 }
 
+                it[editTime] = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+
                 if (request.tags != null) {
                     with (ArticleTag) {
                         deleteWhere {
@@ -115,13 +117,14 @@ class ArticleService(val database: Database): KoinComponent {
                         }
 
                         for (tag in request.tags) {
-                            insert {
-                                it[this.articleId] = articleId
-                                it[tagId] = tagId
+                            insert { column ->
+                                column[this.articleId] = articleId
+                                column[tagId] = tagId
                             }
                         }
                     }
                 }
+
             }
         }
 

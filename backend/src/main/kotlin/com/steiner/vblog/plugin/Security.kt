@@ -20,7 +20,6 @@ fun Application.configureSecurity() {
     val domain: String by inject<String>(named("jwt.domain"))
     val realm: String by inject<String>(named("jwt.realm"))
     val secret: String by inject<String>(named("jwt.secret"))
-    val logger = this.log
 
     authentication {
         jwt("auth-jwt") {

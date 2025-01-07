@@ -10,6 +10,6 @@ import kotlinx.serialization.Serializable
 class Category(
     val id: Int,
     val name: String,
-    val createTime: LocalDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
+    val createTime: LocalDateTime,
     val userId: Int
 )

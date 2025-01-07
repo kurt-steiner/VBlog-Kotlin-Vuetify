@@ -169,6 +169,13 @@ class UserService(val database: Database): KoinComponent {
         }
     }
 
+    suspend fun matchUser(name: String, passwordHash: String): Boolean = dbQuery(database) {
+        with (Users) {
+            selectAll().where((this.name eq name) and (this.passwordHash eq passwordHash))
+                .firstOrNull() != null
+        }
+    }
+
     suspend fun clear() = dbQuery(database) {
         with (Users) {
             selectAll().map {

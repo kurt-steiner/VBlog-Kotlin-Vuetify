@@ -1,5 +1,7 @@
 package com.steiner.vblog.plugin
 
+import com.steiner.vblog.exception.LoginException
+import com.steiner.vblog.exception.RegisterException
 import com.steiner.vblog.util.Response
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -15,6 +17,16 @@ fun Application.configureErrorHandler() {
         exception<BadRequestException> { call, cause ->
             logger.error(cause.stackTraceToString())
             call.respond(HttpStatusCode.BadRequest, Response.Err(cause.message ?: "bad request"))
+        }
+
+        exception<LoginException> { call, cause ->
+            logger.error(cause.stackTraceToString())
+            call.respond(HttpStatusCode.Unauthorized, Response.Err(cause.message))
+        }
+
+        exception<RegisterException> { call, cause ->
+            logger.error(cause.stackTraceToString())
+            call.respond(HttpStatusCode.BadRequest, Response.Err(cause.message))
         }
 
         exception<NullPointerException> { call, cause ->

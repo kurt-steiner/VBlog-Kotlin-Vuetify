@@ -17,6 +17,8 @@ import io.ktor.http.auth.*
 import io.ktor.http.parsing.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import kotlin.test.Test
 
 
@@ -144,5 +146,26 @@ class ApplicationTest {
             println("${e.message}")
         }
 
+    }
+
+    @Test
+    fun testSerializeUser() = runBlocking {
+        val loginRespone = client.post("http://localhost:8080/login") {
+            contentType(ContentType.Application.Json)
+
+            setBody(LoginRequest(
+                name = "steiner",
+                passwordHash = "123456"
+            ))
+        }
+
+        val authentication = "Bearer ${loginRespone.body<Response.Ok<String>>().data}"
+        val getUserResponse = client.get("http://localhost:8080/user") {
+            header(AuthenticationHeader, authentication)
+        }
+
+        val user = getUserResponse.body<Response.Ok<User>>().data
+
+        println(Json.encodeToString(user))
     }
 }
