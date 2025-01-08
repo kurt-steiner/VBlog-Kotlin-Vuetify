@@ -1,4 +1,4 @@
-import type { Tag } from "./models"
+import type { ArticleStatus, Tag } from "./models"
 
 export interface LoginRequest {
     name: string
@@ -11,7 +11,7 @@ export interface PostArticleRequest {
     htmlContent: string
     categoryId?: number
     tags?: Tag[]
-    status: number
+    status: ArticleStatus
     authorId: number
 }
 
@@ -32,6 +32,7 @@ export interface PutArticleRequest {
     htmlContent?: string
     categoryId?: number
     tags?: Tag[]
+    status?: ArticleStatus
 }
 
 export interface PutCategoryRequest {
