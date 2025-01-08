@@ -91,7 +91,7 @@ class TagService(val database: Database) {
         }
     }
 
-    suspend fun findAll(articleId: Int): List<Tag> = dbQuery(database) {
+    suspend fun findAllOfArticle(articleId: Int): List<Tag> = dbQuery(database) {
         val tagIds = with (ArticleTag) {
             selectAll().where(this.articleId eq articleId)
                 .map {
@@ -101,6 +101,15 @@ class TagService(val database: Database) {
 
         return@dbQuery tagIds.map {
             findOne(it)!!
+        }
+    }
+
+    suspend fun findAllOfAuthor(authorId: Int): List<Tag> = dbQuery(database) {
+        with (Tags) {
+            selectAll().where(userId eq authorId)
+                .map {
+                    findOne(it[id].value)!!
+                }
         }
     }
 

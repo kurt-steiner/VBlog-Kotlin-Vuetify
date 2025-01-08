@@ -3,6 +3,7 @@ package com.steiner
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.steiner.vblog.AuthenticationHeader
+import com.steiner.vblog.model.ArticleStatus
 import com.steiner.vblog.model.User
 import com.steiner.vblog.request.*
 import com.steiner.vblog.util.Response
@@ -17,6 +18,7 @@ import io.ktor.http.auth.*
 import io.ktor.http.parsing.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
@@ -108,7 +110,7 @@ class ApplicationTest {
                 title = "hello",
                 htmlContent = "<h1> Hello World </h1>",
                 markdownContent = "# Hello World",
-                status = 1,
+                status = ArticleStatus.Published,
                 authorId = user.id,
             ))
         }
@@ -167,5 +169,33 @@ class ApplicationTest {
         val user = getUserResponse.body<Response.Ok<User>>().data
 
         println(Json.encodeToString(user))
+    }
+
+    @Test
+    fun deserializeArticleStatus() {
+        val jsonString = """
+            {
+              "title": "hello",
+              "markdownContent": "",
+              "htmlContent": "",
+              "status": 0,
+              "authorId": 1
+            } 
+        """.trimIndent()
+
+        try {
+            val request = Json.decodeFromString<PostArticleRequest>(jsonString)
+            println(request.status)
+        } catch (e: SerializationException) {
+            println("1. ${e.message!!}")
+        } catch (e: IllegalArgumentException) {
+            println("2. ${e.message!!}")
+        }
+    }
+
+    @Test
+    fun `deserialize article status from integer`() {
+        val statusCode = "0"
+        println(Json.decodeFromString<ArticleStatus>(statusCode))
     }
 }

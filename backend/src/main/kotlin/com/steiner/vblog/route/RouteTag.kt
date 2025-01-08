@@ -3,7 +3,9 @@ package com.steiner.vblog.route
 import com.steiner.vblog.request.PostTagRequest
 import com.steiner.vblog.request.PutTagRequest
 import com.steiner.vblog.service.TagService
+import com.steiner.vblog.service.UserService
 import com.steiner.vblog.util.Response
+import com.steiner.vblog.util.currentUser
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -14,6 +16,7 @@ import org.koin.ktor.ext.inject
 
 fun Application.routeTag() {
     val tagService: TagService by inject<TagService>()
+    val userService: UserService by inject<UserService>()
 
     routing {
         authenticate("auth-jwt") {
@@ -37,6 +40,13 @@ fun Application.routeTag() {
                     tagService.deleteOne(id)
 
                     call.respond(Response.Ok("delete ok", Unit))
+                }
+
+                get {
+                    val user = currentUser(userService)
+                    val tags = tagService.findAllOfAuthor(user.id)
+
+                    call.respond(Response.Ok("all tags", tags))
                 }
             }
         }

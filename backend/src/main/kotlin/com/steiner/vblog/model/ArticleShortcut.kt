@@ -12,5 +12,22 @@ class ArticleShortcut(
     val author: User,
     val publishDate: LocalDateTime,
     val editTime: LocalDateTime,
-    val status: Article.Companion.Status
-)
+    val status: ArticleStatus
+) {
+    companion object {
+        @JvmStatic
+        fun fromArticle(article: Article): ArticleShortcut {
+            return ArticleShortcut(
+                id = article.id,
+                title = article.title,
+                summary = article.summary,
+                category = article.category,
+                author = article.author,
+                publishDate = article.publishDate,
+                editTime = article.editTime,
+                status = article.status
+            )
+        }
+    }
+
+}

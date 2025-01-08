@@ -11,7 +11,7 @@ sealed class ArticleQuery {
 
     @Serializable
     @SerialName("status")
-    class Status(val authorId: Int, val status: Article.Companion.Status): ArticleQuery()
+    class Status(val authorId: Int, val status: ArticleStatus): ArticleQuery()
 
     @Serializable
     @SerialName("title")

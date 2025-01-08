@@ -34,7 +34,7 @@ class ArticleService(val database: Database): KoinComponent {
     val tagService: TagService by inject<TagService>()
     val summaryMaxLength: Int by inject<Int>(named("summary.max-length"))
 
-    suspend fun insertOne(request: PostArticleRequest): Article = dbQuery(database) {
+    suspend fun insertOne(request: PostArticleRequest): ArticleShortcut = dbQuery(database) {
         val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
         val id = with (Articles) {
             insert {
@@ -51,7 +51,7 @@ class ArticleService(val database: Database): KoinComponent {
                 // editTime
                 it[editTime] = now
                 // status
-                it[status] = Article.decodeStatus(request.status)
+                it[status] = request.status
             } get id
         }
 
@@ -64,7 +64,8 @@ class ArticleService(val database: Database): KoinComponent {
             }
         }
 
-        findOne(id.value)!!
+        val article = findOne(id.value)!!
+        ArticleShortcut.fromArticle(article)
     }
 
     suspend fun deleteAllOfAuthor(userId: Int) = dbQuery(database) {
@@ -125,6 +126,9 @@ class ArticleService(val database: Database): KoinComponent {
                     }
                 }
 
+                if (request.status != null) {
+                    it[status] = request.status
+                }
             }
         }
 
@@ -149,13 +153,14 @@ class ArticleService(val database: Database): KoinComponent {
                         publishDate = it[publishDate],
                         editTime = it[editTime],
                         status = it[status],
-                        tags = tagService.findAll(articleId)
+                        tags = tagService.findAllOfArticle(articleId)
                     )
                 }
         }
     }
 
     suspend fun findAll(query: ArticleQuery, page: Int, size: Int): Page<ArticleShortcut> = dbQuery(database) {
+
         val content = with (Articles) {
             selectAll().where {
                 when (query) {

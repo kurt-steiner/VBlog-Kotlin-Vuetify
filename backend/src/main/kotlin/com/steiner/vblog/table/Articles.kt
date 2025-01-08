@@ -1,7 +1,7 @@
 package com.steiner.vblog.table
 
 import com.steiner.vblog.ArticleConfigure
-import com.steiner.vblog.model.Article
+import com.steiner.vblog.model.ArticleStatus
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.kotlin.datetime.datetime
 
@@ -14,5 +14,5 @@ object Articles: IntIdTable("articles") {
     val authorId = reference("author-id", Users)
     val publishDate = datetime("publish-date")
     val editTime = datetime("edit-time")
-    val status = enumeration<Article.Companion.Status>("status")
+    val status = enumeration<ArticleStatus>("status")
 }
