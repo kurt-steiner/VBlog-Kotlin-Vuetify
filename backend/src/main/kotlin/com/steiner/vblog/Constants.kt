@@ -18,10 +18,10 @@ object ImageItemConfigure {
 }
 
 object UserConfigure {
-    const val NAME_LENGTH = 256
-    const val NICKNAME_LENGTH = 256
-    const val PASSWORD_LENGTH = 1024
-    const val EMAIL_LENGTH = 256
+    const val NAME_LENGTH = 64
+    const val NICKNAME_LENGTH = 64
+    const val PASSWORD_LENGTH = 64
+    const val EMAIL_LENGTH = 64
 }
 
 const val AuthenticationHeader = "Authentication"

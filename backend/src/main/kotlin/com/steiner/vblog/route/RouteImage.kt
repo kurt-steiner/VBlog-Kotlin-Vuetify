@@ -4,7 +4,6 @@ import com.steiner.vblog.service.ImageItemService
 import com.steiner.vblog.util.Response
 import io.ktor.http.content.*
 import io.ktor.server.application.*
-import io.ktor.server.auth.*
 import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -23,41 +22,38 @@ fun Application.routeImage() {
 
     routing {
         route("/image") {
-            authenticate("auth-jwt") {
-                get("/download/{id}") {
-                    val id = call.pathParameters.getOrFail<Int>("id")
-                    val imageItem = imageItemService.findOne(id)
-                        ?: throw BadRequestException("no such image item with id $id")
+            get("/download/{id}") {
+                val id = call.pathParameters.getOrFail<Int>("id")
+                val imageItem = imageItemService.findOne(id)
+                    ?: throw BadRequestException("no such image item with id $id")
 
-                    val file = File(imageItem.path)
+                val file = File(imageItem.path)
 
-                    if (!file.exists()) {
-                        throw FileNotFoundException("file not exist")
-                    }
-
-                    call.respondFile(file)
+                if (!file.exists()) {
+                    throw FileNotFoundException("file not exist")
                 }
 
-                post("/upload") {
-                    val multipartData = call.receiveMultipart()
+                call.respondFile(file)
+            }
 
-                    multipartData.forEachPart { part ->
-                        if (part is PartData.FileItem) {
-                            val result = imageItemService.insertOne(part)
-                            val fileBytes = part.provider().readRemaining().readByteArray()
+            post("/upload") {
+                val multipartData = call.receiveMultipart()
 
-                            withContext(Dispatchers.IO) {
-                                File(result.path).writeBytes(fileBytes)
-                            }
+                multipartData.forEachPart { part ->
+                    if (part is PartData.FileItem) {
+                        val result = imageItemService.insertOne(part)
+                        val fileBytes = part.provider().readRemaining().readByteArray()
 
-                            part.dispose()
-
-                            call.respond(Response.Ok("upload ok", result))
+                        withContext(Dispatchers.IO) {
+                            File(result.path).writeBytes(fileBytes)
                         }
+
+                        part.dispose()
+
+                        call.respond(Response.Ok("upload ok", result))
                     }
                 }
             }
-
         }
     }
 

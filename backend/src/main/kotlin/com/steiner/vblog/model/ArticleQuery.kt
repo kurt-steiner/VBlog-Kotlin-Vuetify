@@ -1,19 +1,23 @@
 package com.steiner.vblog.model
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+sealed class ArticleQuery(open val authorId: Int, open val sortBy: ArticleSortBy) {
+    class Author(
+        override val authorId: Int,
+        override val sortBy: ArticleSortBy): ArticleQuery(authorId, sortBy)
 
-@Serializable
-sealed class ArticleQuery {
-    @Serializable
-    @SerialName("author")
-    class Author(val authorId: Int): ArticleQuery()
+    class Status(
+        override val authorId: Int,
+        override val sortBy: ArticleSortBy,
+        val status: ArticleStatus): ArticleQuery(authorId, sortBy)
 
-    @Serializable
-    @SerialName("status")
-    class Status(val authorId: Int, val status: ArticleStatus): ArticleQuery()
+    class Title(
+        override val authorId: Int,
+        override val sortBy: ArticleSortBy,
+        val title: String): ArticleQuery(authorId, sortBy)
 
-    @Serializable
-    @SerialName("title")
-    class Title(val authorId: Int, val title: String): ArticleQuery()
+    class Tag(
+        override val authorId: Int,
+        override val sortBy: ArticleSortBy,
+        val tagId: Int): ArticleQuery(authorId, sortBy)
+
 }

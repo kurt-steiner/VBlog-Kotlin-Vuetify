@@ -2,6 +2,7 @@ package com.steiner.vblog.route
 
 import com.steiner.vblog.model.Article
 import com.steiner.vblog.model.ArticleQuery
+import com.steiner.vblog.model.ArticleSortBy
 import com.steiner.vblog.model.ArticleStatus
 import com.steiner.vblog.request.PostArticleRequest
 import com.steiner.vblog.request.PutArticleRequest
@@ -55,11 +56,22 @@ fun Application.routeArticle() {
                     val queryContent = call.queryParameters["content"]
                     val page = call.queryParameters["page"]?.toIntOrNull() ?: 0
                     val size = call.queryParameters["size"]?.toIntOrNull() ?: 20
+                    val reverse = call.queryParameters["reverse"] == "true"
+
+                    val sortBy = call.queryParameters["sort-by"]?.let {
+                        when (it) {
+                            "title" -> ArticleSortBy.ByTitle(reverse)
+                            "edit-time" -> ArticleSortBy.ByEditTime(reverse)
+                            "publish-date" -> ArticleSortBy.ByPublishDate(reverse)
+                            else -> null
+                        }
+                    } ?: ArticleSortBy.ByEditTime(false)
+
                     val articleQuery = when (query) {
-                        "author" -> ArticleQuery.Author(user.id)
+                        "author" -> ArticleQuery.Author(user.id, sortBy)
                         "status" -> {
                             queryContent?.toIntOrNull() ?: throw BadRequestException("query parameter error: content")
-                            ArticleQuery.Status(user.id, json.decodeFromString<ArticleStatus>(queryContent))
+                            ArticleQuery.Status(authorId = user.id, status = json.decodeFromString<ArticleStatus>(queryContent), sortBy = sortBy)
                         }
 
                         "title" -> {
@@ -67,14 +79,22 @@ fun Application.routeArticle() {
                                 throw BadRequestException("empty content")
                             }
 
-                            ArticleQuery.Title(user.id, queryContent)
+                            ArticleQuery.Title(user.id, title = queryContent, sortBy = sortBy)
+                        }
+
+                        "tag" -> {
+                            if (queryContent == null) {
+                                throw BadRequestException("empty content")
+                            }
+
+                            val tagId = call.queryParameters.getOrFail<Int>("content")
+                            ArticleQuery.Tag(user.id, tagId = tagId, sortBy = sortBy)
                         }
 
                         else -> throw BadRequestException("unknown query parameter")
                     }
 
                     val articles = articleService.findAll(query = articleQuery, page = page, size = size)
-
                     call.respond(Response.Ok("all articles", articles))
                 }
 

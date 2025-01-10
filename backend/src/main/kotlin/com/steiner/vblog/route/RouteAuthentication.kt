@@ -27,7 +27,6 @@ fun Application.routeAuthentication() {
     routing {
         post("/login") {
             val request = call.receive<LoginRequest>()
-
             val success = userService.matchUser(request.name, request.passwordHash)
 
             if (!success) {

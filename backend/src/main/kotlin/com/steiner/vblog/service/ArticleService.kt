@@ -3,6 +3,7 @@ package com.steiner.vblog.service
 import com.steiner.vblog.model.Article
 import com.steiner.vblog.model.ArticleQuery
 import com.steiner.vblog.model.ArticleShortcut
+import com.steiner.vblog.model.ArticleSortBy
 import com.steiner.vblog.request.PostArticleRequest
 import com.steiner.vblog.request.PutArticleRequest
 import com.steiner.vblog.table.ArticleTag
@@ -160,8 +161,18 @@ class ArticleService(val database: Database): KoinComponent {
     }
 
     suspend fun findAll(query: ArticleQuery, page: Int, size: Int): Page<ArticleShortcut> = dbQuery(database) {
-
         val content = with (Articles) {
+            val column = when (query.sortBy) {
+                is ArticleSortBy.ByTitle -> title
+                is ArticleSortBy.ByEditTime -> editTime
+                is ArticleSortBy.ByPublishDate -> publishDate
+            }
+
+            val order = when (query.sortBy.reverse) {
+                true -> SortOrder.ASC
+                false -> SortOrder.DESC
+            }
+
             selectAll().where {
                 when (query) {
                     is ArticleQuery.Author -> {
@@ -175,8 +186,21 @@ class ArticleService(val database: Database): KoinComponent {
                     is ArticleQuery.Title -> {
                         (authorId eq query.authorId) and (title like "%${query.title}%")
                     }
+
+                    is ArticleQuery.Tag -> {
+                        val matchedIds = with (ArticleTag) {
+                            selectAll().where(tagId eq query.tagId)
+                                .map {
+                                    it[articleId]
+                                }
+                        }
+
+                        (authorId eq query.authorId) and (id inList matchedIds)
+                    }
                 }
-            }.limit(size)
+            }
+                .orderBy(column, order = order)
+                .limit(size)
                 .offset(page * size.toLong())
                 .map {
                     ArticleShortcut(
@@ -189,7 +213,8 @@ class ArticleService(val database: Database): KoinComponent {
                         author = userService.findOne(it[authorId].value)!!,
                         publishDate = it[publishDate],
                         editTime = it[editTime],
-                        status = it[status]
+                        status = it[status],
+                        tags = tagService.findAllOfArticle(it[id].value)
                     )
                 }
         }

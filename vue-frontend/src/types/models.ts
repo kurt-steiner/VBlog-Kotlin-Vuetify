@@ -48,6 +48,7 @@ export interface ArticleShortcut {
     publishDate: Date
     editTime: Date
     status: ArticleStatus
+    tags: Tag[]
 }
 
 export enum ArticleStatus {

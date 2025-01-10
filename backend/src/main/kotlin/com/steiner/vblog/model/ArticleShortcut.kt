@@ -12,7 +12,8 @@ class ArticleShortcut(
     val author: User,
     val publishDate: LocalDateTime,
     val editTime: LocalDateTime,
-    val status: ArticleStatus
+    val status: ArticleStatus,
+    val tags: List<Tag>
 ) {
     companion object {
         @JvmStatic
@@ -25,7 +26,8 @@ class ArticleShortcut(
                 author = article.author,
                 publishDate = article.publishDate,
                 editTime = article.editTime,
-                status = article.status
+                status = article.status,
+                tags = article.tags
             )
         }
     }
