@@ -1,10 +1,13 @@
 import { defineStore } from "pinia";
-import { type User, type Article, type Category, type ArticleShortcut, type PostArticleRequest, ArticleSortBy, type PutArticleRequest, type PostCategoryRequest, type PutCategoryRequest, type PostTagRequest, type Tag, type PutTagRequest } from "./types";
+import { type User, type Article, type Category, type ArticleShortcut, type PostArticleRequest, ArticleSortBy, type PutArticleRequest, type PostCategoryRequest, type PutCategoryRequest, type PostTagRequest, type Tag, type PutTagRequest, type RegisterRequest } from "./types";
 import * as api from "./api"
+
+import { sha256 } from "js-sha256";
 
 const useVBlogStore = defineStore("vblog", {
     state: () => {
         return {
+            isLogined: false,
             currentUser: null as User | null,
             currentArticle: null as Article | null,
             articleShortcuts: [] as ArticleShortcut[],
@@ -43,9 +46,12 @@ const useVBlogStore = defineStore("vblog", {
             this.categories = []
             this.tags = []
             this.sortBy = ArticleSortBy.ByPublishDate
+            this.isLogined = false
         },
 
-        async login(token: string): Promise<void> {
+        async login(username: string, password: string): Promise<void> {
+            let passwordHash = sha256(password)
+            let token = await api.login({name: username, passwordHash})
             localStorage.setItem("token", token)
             await this.loadCurrentUser()
 
@@ -53,8 +59,23 @@ const useVBlogStore = defineStore("vblog", {
                 this.loadArticles({}),
                 this.loadCategories()
             ])
+
+            this.isLogined = true
         },
 
+        async register(request: RegisterRequest): Promise<void> {
+            let passwordHash = sha256(request.passwordHash)
+            await api.register({...request, passwordHash})
+        },
+
+        async reload(): Promise<void> {
+            await this.loadCurrentUser()
+
+            await Promise.all([
+                this.loadArticles({}),
+                this.loadCategories()
+            ])
+        },
 
         async loadCurrentUser(): Promise<void> {
             this.currentUser = await api.currentUser()
@@ -98,7 +119,8 @@ const useVBlogStore = defineStore("vblog", {
                 author: article.author,
                 publishDate: article.publishDate,
                 editTime: article.editTime,
-                status: article.status
+                status: article.status,
+                tags: article.tags
             }
 
             this.sortBy = this.sortBy // resort

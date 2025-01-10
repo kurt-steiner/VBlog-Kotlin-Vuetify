@@ -1,16 +1,18 @@
 import axios from "axios";
-
 import router from "../router"
+import useVBlogStore from "../store";
+
+export const BACKEND_URL: string = import.meta.env.VITE_BACKEND_URL
 
 export const normalInstance = axios.create({
-    baseURL: "http://localhost:8080",
+    baseURL: BACKEND_URL,
     headers: {
         "Content-Type": "application/json",
     }
 })
 
 const authenticateInstance = axios.create({
-    baseURL: "http://localhost:8080",
+    baseURL: BACKEND_URL,
     headers: {
         "Content-Type": "application/json",
     }
@@ -33,7 +35,9 @@ authenticateInstance.interceptors.response.use(
     },
     error => {
         if (error.response.status === 401) {
-            router.replace({ name: "login" })
+            const store = useVBlogStore()
+            store.logout()
+            router.replace({ name: "Login" })
         }
 
         return Promise.reject(error)

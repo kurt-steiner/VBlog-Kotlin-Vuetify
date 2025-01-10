@@ -3,12 +3,12 @@ import type { Category, PostCategoryRequest, PutCategoryRequest, Response } from
 
 export const insertCategory = async (request: PostCategoryRequest): Promise<Category> => {
     let response = await authenticateInstance.post("/category", request)
-    return (response.data["data"] as Response<Category>).data!
+    return (response.data as Response<Category>).data!
 }
 
 export const updateCategory = async (request: PutCategoryRequest): Promise<Category> => {
     let response = await authenticateInstance.put("/category", request)
-    return (response.data["data"] as Response<Category>).data!
+    return (response.data as Response<Category>).data!
 }
 
 export const deleteCategory = async (id: number): Promise<void> => {
@@ -17,5 +17,5 @@ export const deleteCategory = async (id: number): Promise<void> => {
 
 export const findAllCategories = async (): Promise<Category[]> => {
     let response = await authenticateInstance.get("/category")
-    return (response.data["data"] as Response<Category[]>).data!
+    return (response.data as Response<Category[]>).data!
 }

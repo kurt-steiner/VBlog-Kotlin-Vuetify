@@ -7,7 +7,7 @@ export const register = async (request: RegisterRequest): Promise<void> => {
 
 export const currentUser = async (): Promise<User> => {
     let response = await authenticateInstance.get("/user")
-    return (response.data["data"] as Response<User>).data!
+    return (response.data as Response<User>).data!
 }
 
 export const updateUser = async (request: PutUserRequest): Promise<void> => {

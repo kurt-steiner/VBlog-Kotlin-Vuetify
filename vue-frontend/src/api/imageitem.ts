@@ -1,21 +1,17 @@
-import { authenticateInstance } from ".";
+import { normalInstance } from ".";
 import type { ImageItem, Response } from "../types";
-
+import { BACKEND_URL } from ".";
 export const uploadImage = async (file: File): Promise<ImageItem> => {
     let formData = new FormData()
     formData.append("file", file)
-    let response = await authenticateInstance.post("/image/upload", formData, {
+    let response = await normalInstance.post("/image/upload", formData, {
         headers: {
             "Content-Type": "multipart/form-data"
         }
     })
-    return (response.data["data"] as Response<ImageItem>).data!
+    return (response.data as Response<ImageItem>).data!
 }
 
-export const findImage = async (id: number): Promise<string> => {
-    let response = await authenticateInstance.get(`/image/download/${id}`, {
-        responseType: "blob"
-    })
-
-    return URL.createObjectURL(response.data)
+export const findImage = (id: number): string => {
+    return `${BACKEND_URL}/image/download/${id}`
 }
