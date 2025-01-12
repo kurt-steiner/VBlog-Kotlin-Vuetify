@@ -1,9 +1,6 @@
 package com.steiner.vblog.service
 
-import com.steiner.vblog.model.Article
-import com.steiner.vblog.model.ArticleQuery
-import com.steiner.vblog.model.ArticleShortcut
-import com.steiner.vblog.model.ArticleSortBy
+import com.steiner.vblog.model.*
 import com.steiner.vblog.request.PostArticleRequest
 import com.steiner.vblog.request.PutArticleRequest
 import com.steiner.vblog.table.ArticleTag
@@ -162,42 +159,47 @@ class ArticleService(val database: Database): KoinComponent {
 
     suspend fun findAll(query: ArticleQuery, page: Int, size: Int): Page<ArticleShortcut> = dbQuery(database) {
         val content = with (Articles) {
-            val column = when (query.sortBy) {
-                is ArticleSortBy.ByTitle -> title
-                is ArticleSortBy.ByEditTime -> editTime
-                is ArticleSortBy.ByPublishDate -> publishDate
+            val column = when (query.sortBy?.sortBy) {
+                SortBy.ByTitle -> title
+                SortBy.ByEditTime -> editTime
+                SortBy.ByPublishDate -> publishDate
+                null -> title
             }
 
-            val order = when (query.sortBy.reverse) {
+            val order = when (query.sortBy?.reverse) {
                 true -> SortOrder.ASC
                 false -> SortOrder.DESC
+                null -> SortOrder.ASC
             }
 
             selectAll().where {
-                when (query) {
-                    is ArticleQuery.Author -> {
-                        authorId eq query.authorId
-                    }
-
-                    is ArticleQuery.Status -> {
-                        (authorId eq query.authorId) and (status eq query.status)
-                    }
-
-                    is ArticleQuery.Title -> {
-                        (authorId eq query.authorId) and (title like "%${query.title}%")
-                    }
-
-                    is ArticleQuery.Tag -> {
-                        val matchedIds = with (ArticleTag) {
-                            selectAll().where(tagId eq query.tagId)
-                                .map {
-                                    it[articleId]
-                                }
-                        }
-
-                        (authorId eq query.authorId) and (id inList matchedIds)
-                    }
+                val flag1 = authorId eq query.authorId
+                val flag2 = if (query.status != null) {
+                    status eq query.status
+                } else {
+                    Op.TRUE
                 }
+
+                val flag3 = if (query.tagId != null) {
+                    val matchedIds = with (ArticleTag) {
+                        selectAll().where(tagId eq query.tagId)
+                            .map {
+                                it[articleId]
+                            }
+                    }
+
+                    id inList matchedIds
+                } else {
+                    Op.TRUE
+                }
+
+                val flag4 = if (query.categoryId != null) {
+                    categoryId eq query.categoryId
+                } else {
+                    Op.TRUE
+                }
+
+                flag1 and flag2 and flag3 and flag4
             }
                 .orderBy(column, order = order)
                 .limit(size)

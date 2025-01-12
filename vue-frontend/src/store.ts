@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { type User, type Article, type Category, type ArticleShortcut, type PostArticleRequest, ArticleSortBy, type PutArticleRequest, type PostCategoryRequest, type PutCategoryRequest, type PostTagRequest, type Tag, type PutTagRequest, type RegisterRequest } from "./types";
+import { type User, type Article, type Category, type ArticleShortcut, type PostArticleRequest, type PutArticleRequest, type PostCategoryRequest, type PutCategoryRequest, type PostTagRequest, type Tag, type PutTagRequest, type RegisterRequest, type ArticleQuery } from "./types";
 import * as api from "./api"
 
 import { sha256 } from "js-sha256";
@@ -8,36 +8,19 @@ const useVBlogStore = defineStore("vblog", {
     state: () => {
         return {
             isLogined: false,
+            page: 1,
+            size: 20,
+            totalPages: 1,
             currentUser: null as User | null,
             currentArticle: null as Article | null,
             articleShortcuts: [] as ArticleShortcut[],
             categories: [] as Category[],
             tags: [] as Tag[],
-            sortBy: ArticleSortBy.ByPublishDate
+            /* sortBy: ArticleSortBy.ByPublishDate */
         }
     },
 
     actions: {
-        set sortBy(value: ArticleSortBy) {
-            this.sortBy = value
-            switch (value) {
-                case ArticleSortBy.ByPublishDate: {
-                    this.articleShortcuts.sort((left, right) => left.publishDate < right.publishDate ? 1 : -1)
-                    break
-                }
-
-                case ArticleSortBy.ByTitle: {
-                    this.articleShortcuts.sort((left, right) => left.title < right.title ? 1 : -1)
-                    break
-                }
-
-                case ArticleSortBy.ByEditTime: {
-                    this.articleShortcuts.sort((left, right) => left.editTime < right.editTime ? 1 : -1)
-                    break
-                }
-            }
-        },
-        
         logout(): void {
             localStorage.removeItem("token")
             this.currentUser = null
@@ -45,7 +28,7 @@ const useVBlogStore = defineStore("vblog", {
             this.articleShortcuts = []
             this.categories = []
             this.tags = []
-            this.sortBy = ArticleSortBy.ByPublishDate
+            /* this.sortBy = ArticleSortBy.ByPublishDate */
             this.isLogined = false
         },
 
@@ -57,7 +40,8 @@ const useVBlogStore = defineStore("vblog", {
 
             await Promise.all([
                 this.loadArticles({}),
-                this.loadCategories()
+                this.loadCategories(),
+                this.loadTags()
             ])
 
             this.isLogined = true
@@ -70,10 +54,11 @@ const useVBlogStore = defineStore("vblog", {
 
         async reload(): Promise<void> {
             await this.loadCurrentUser()
-
+            this.isLogined = true
             await Promise.all([
                 this.loadArticles({}),
-                this.loadCategories()
+                this.loadCategories(),
+                this.loadTags()
             ])
         },
 
@@ -81,10 +66,11 @@ const useVBlogStore = defineStore("vblog", {
             this.currentUser = await api.currentUser()
         },
 
-        async loadArticles({page, size, sortBy}: {page ?: number, size ?: number, sortBy ?: 0 | 1 | 2}): Promise<void> {
-            let result = await api.findAllArticles({query: "author", page, size, sortBy})
+        async loadArticles(query: ArticleQuery): Promise<void> {
+            let result = await api.findAllArticles(query, {page: this.page - 1, size: this.size})
             this.articleShortcuts = result.content
-            this.sortBy = sortBy ?? ArticleSortBy.ByPublishDate
+            this.totalPages = result.totalPages
+            /* this.sortBy = query["sort-by"] ?? ArticleSortBy.ByPublishDate */
         },
 
         async loadCategories(): Promise<void> {
@@ -99,7 +85,7 @@ const useVBlogStore = defineStore("vblog", {
         async insertArticle(request: PostArticleRequest): Promise<void> {
             let shortcut = await api.insertArticle(request)
             this.articleShortcuts.push(shortcut)
-            this.sortBy = this.sortBy // 重新排序
+            /* this.sortBy = this.sortBy // 重新排序 */
         },
 
         async deleteArticle(id: number): Promise<void> {
@@ -123,7 +109,7 @@ const useVBlogStore = defineStore("vblog", {
                 tags: article.tags
             }
 
-            this.sortBy = this.sortBy // resort
+            /* this.sortBy = this.sortBy // resort */
         },
 
         async loadArticle(id: number): Promise<void> {

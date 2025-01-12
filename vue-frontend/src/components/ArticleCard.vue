@@ -1,12 +1,12 @@
 <template>
-    <VCard class="article-card" width="100%" rounded="lg" hover>
-        <VCardTitle>
-            {{ title }}
-        </VCardTitle>
+    <VCard class="article-card" width="100%" rounded="lg" hover :title="title">
+        <template #append v-if="category !== undefined">
+            <VChip border variant="elevated"> {{ category.name }} </VChip>
+        </template>
 
         <VCardSubtitle>
             <template v-for="tag in tags" :key="tag.id">
-                <VChip> {{ tag.id }}</VChip>
+                <VChip> {{ tag.name }}</VChip>
             </template>
         </VCardSubtitle>
 
@@ -16,7 +16,7 @@
 
         <VCardActions>
             <VBtn icon="mdi-pencil" @click="toggleEdit"/>
-            <VBtn icon="mdi-preview-outline" @click="togglePreview"/>
+            <VBtn icon="mdi-eye-arrow-left-outline" @click="togglePreview"/>
             <VBtn icon="mdi-delete" color="error" @click="toggleDelete"/>
         </VCardActions>
     </VCard>

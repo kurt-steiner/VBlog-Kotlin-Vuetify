@@ -2,6 +2,8 @@ package com.steiner.vblog
 
 object ArticleConfigure {
     const val TITLE_LENGTH = 256
+    const val QUERY_PAGE = 0
+    const val QUERY_SIZE = 20
 }
 
 object CategoryConfigure {

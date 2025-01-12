@@ -1,5 +1,5 @@
 import { authenticateInstance } from "."
-import type { Article, ArticleShortcut, Page, PostArticleRequest, PutArticleRequest, Response } from "../types"
+import type { Article, ArticleQuery, ArticleShortcut, Page, PostArticleRequest, PutArticleRequest, Response } from "../types"
 
 export const insertArticle = async (request: PostArticleRequest): Promise<ArticleShortcut> => {
     let response = await authenticateInstance.post("/article", request)
@@ -15,14 +15,22 @@ export const updateArticle = async (request: PutArticleRequest): Promise<Article
     return (response.data as Response<Article>).data!
 }
 
-export const findAllArticles = async ({query, content, page, size, sortBy}: { query: "author" | "status" | "title", content?: string, page?: number, size?: number, sortBy ?: 0 | 1 | 2}): Promise<Page<ArticleShortcut>> => {
+export const findAllArticles = async (query: ArticleQuery, {page, size}: {page ?: number, size ?: number}): Promise<Page<ArticleShortcut>> => {
     let response = await authenticateInstance.get("/article", {
         params: {
-            query,
-            content,
+            ...query,
             page,
-            size,
-            "sort-by": sortBy
+            size
+        }
+    })
+
+    response.data.data.content = response.data.data.content.map((article: {publishDate: string, editTime: string, [key: string]: any}) => {
+        let publishDate = new Date(article.publishDate)
+        let editTime = new Date(article.editTime)
+        return {
+            ...article,
+            publishDate,
+            editTime
         }
     })
 
@@ -31,6 +39,7 @@ export const findAllArticles = async ({query, content, page, size, sortBy}: { qu
 
 export const findArticle = async (id: number): Promise<Article> => {
     let response = await authenticateInstance.get(`/article/${id}`)
-
+    response.data.data.publishDate = new Date(response.data.data.publishDate)
+    response.data.data.editTime = new Date(response.data.data.editTime)
     return (response.data as Response<Article>).data!
 }

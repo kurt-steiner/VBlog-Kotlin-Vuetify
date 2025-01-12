@@ -1,9 +1,7 @@
 package com.steiner.vblog.route
 
-import com.steiner.vblog.model.Article
-import com.steiner.vblog.model.ArticleQuery
-import com.steiner.vblog.model.ArticleSortBy
-import com.steiner.vblog.model.ArticleStatus
+import com.steiner.vblog.ArticleConfigure
+import com.steiner.vblog.model.*
 import com.steiner.vblog.request.PostArticleRequest
 import com.steiner.vblog.request.PutArticleRequest
 import com.steiner.vblog.service.ArticleService
@@ -52,47 +50,44 @@ fun Application.routeArticle() {
 
                 get {
                     val user = currentUser(userService)
-                    val query = call.queryParameters["query"] ?: "author"
-                    val queryContent = call.queryParameters["content"]
-                    val page = call.queryParameters["page"]?.toIntOrNull() ?: 0
-                    val size = call.queryParameters["size"]?.toIntOrNull() ?: 20
-                    val reverse = call.queryParameters["reverse"] == "true"
+                    val status = call.queryParameters["status"]
 
-                    val sortBy = call.queryParameters["sort-by"]?.let {
-                        when (it) {
-                            "title" -> ArticleSortBy.ByTitle(reverse)
-                            "edit-time" -> ArticleSortBy.ByEditTime(reverse)
-                            "publish-date" -> ArticleSortBy.ByPublishDate(reverse)
-                            else -> null
-                        }
-                    } ?: ArticleSortBy.ByEditTime(false)
-
-                    val articleQuery = when (query) {
-                        "author" -> ArticleQuery.Author(user.id, sortBy)
-                        "status" -> {
-                            queryContent?.toIntOrNull() ?: throw BadRequestException("query parameter error: content")
-                            ArticleQuery.Status(authorId = user.id, status = json.decodeFromString<ArticleStatus>(queryContent), sortBy = sortBy)
-                        }
-
-                        "title" -> {
-                            if (queryContent == null) {
-                                throw BadRequestException("empty content")
-                            }
-
-                            ArticleQuery.Title(user.id, title = queryContent, sortBy = sortBy)
-                        }
-
-                        "tag" -> {
-                            if (queryContent == null) {
-                                throw BadRequestException("empty content")
-                            }
-
-                            val tagId = call.queryParameters.getOrFail<Int>("content")
-                            ArticleQuery.Tag(user.id, tagId = tagId, sortBy = sortBy)
-                        }
-
-                        else -> throw BadRequestException("unknown query parameter")
+                    if (status != null && status !in arrayOf("0", "1", "2", "3")) {
+                        throw BadRequestException("unknown status code")
                     }
+
+                    val tagId = call.queryParameters["tag-id"]?.let {
+                        it.toIntOrNull() ?: throw BadRequestException("cannot parse tag id")
+                    }
+
+                    val categoryId = call.queryParameters["category-id"]?.let {
+                        it.toIntOrNull() ?: throw BadRequestException("cannot parse category id")
+                    }
+
+                    val title = call.queryParameters["title"]
+                    val page = call.queryParameters["page"]?.toIntOrNull() ?: ArticleConfigure.QUERY_PAGE
+                    val size = call.queryParameters["size"]?.toIntOrNull() ?: ArticleConfigure.QUERY_SIZE
+                    val reverse = call.queryParameters["reverse"] == "true"
+                    val sortBy = when (call.queryParameters["sort-by"]) {
+                        "title" -> SortBy.ByTitle
+                        "edit-time" -> SortBy.ByEditTime
+                        "publish-date" -> SortBy.ByPublishDate
+                        else -> SortBy.ByEditTime
+                    }
+
+                    val articleQuery = ArticleQuery(
+                        authorId = user.id,
+                        status = if (status == null) {
+                            null
+                        } else {
+                            json.decodeFromString<ArticleStatus>(status)
+                        },
+
+                        title = title,
+                        tagId = tagId,
+                        sortBy = ArticleSortBy(sortBy = sortBy, reverse = reverse),
+                        categoryId = categoryId
+                    )
 
                     val articles = articleService.findAll(query = articleQuery, page = page, size = size)
                     call.respond(Response.Ok("all articles", articles))
