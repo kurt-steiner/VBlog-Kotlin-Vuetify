@@ -3,9 +3,10 @@
         <VAppBar :elevation="10" color="primary">
             <VAppBarNavIcon @click="toggleDrawer"/>
             <VAppBarTitle>
-                <VAvatar v-if="store.isLogined">
-                    <VImg :src="findImage(store.currentUser?.avatar?.id!)"/>
-                </VAvatar>
+                <template v-if="store.isLogined">
+                    <VAvatar :image="findImage(store.currentUser?.avatar?.id!)"
+                             :size="50"/>
+                </template>
 
                 VBlog 管理系统 (Kotlin + Vue3 + Vuetify)
             </VAppBarTitle>
@@ -25,6 +26,10 @@
                     </VMenu>
                 </template>
                 
+                <template v-if="route.name == 'Article'">
+                    <VBtn @click="toggleEdit" icon="mdi-pencil"/>
+                </template>
+
                 <VBtn @click="logout" icon="mdi-logout"/>
             </template>
         </VAppBar>
@@ -36,7 +41,11 @@
                            :elevation="10" 
                            temporary>
             <template v-for="(route, index) in routes" :key="index">
-                <VListItem nav :to="route.path" :prepend-icon="routeIcons(route.name! as string)">
+                <VListItem nav :to="route.path">
+                    <template #prepend>
+                        <VIcon :icon="route.icon" size="large"/>
+                    </template>
+
                     <VListItemTitle>{{ route.name }} </VListItemTitle>
                 </VListItem>
             </template>
@@ -45,34 +54,37 @@
         <VMain>
             <router-view/>
         </VMain>
+
+        <VSnackbar v-model="snackbar.actived" 
+                   color="error"
+                   width="50%"
+                   :height="60"
+                   position="fixed"
+                   location="top"
+                   :text="snackbar.message"/>
     </VApp>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import useVBlogStore from './store';
+import {useVBlogStore, useSnackbarStore} from './store';
 import { findImage } from './api';
 import { ArticleSortBy } from './types';
 
 const store = useVBlogStore()
+const snackbar = useSnackbarStore()
 const route = useRoute()
 const router = useRouter()
-const routes = router.getRoutes()
+const routes = [
+    { path: "/", name: "主页", icon: "mdi-home" },
+    { path: "/post-article", name: "发表文章", icon: "mdi-application-edit-outline"},
+    { path: "/setting", name: "设置", icon: "mdi-cog-outline"}
+]
+
 const drawerActived = ref(false)
 
 const sortBy = ref(ArticleSortBy.ByEditTime)
-const routeIcons = (name: string): string => {
-    switch (name.toLowerCase()) {
-        case "home": return "mdi-home"
-        case "login": return "mdi-login"
-        case "register": return "mdi-account-plus"
-        case "category-manage": return "mdi-format-list-bulleted"
-        case "tag-manage": return "mdi-format-list-bulleted"
-        default: return "mdi-undefined"
-    }
-}
-
 const toggleDrawer = () => {
     drawerActived.value = !drawerActived.value
 }
@@ -82,8 +94,16 @@ const switchSortBy = async (value: ArticleSortBy): Promise<void> => {
     await store.loadArticles({ "sort-by": value})
 }
 
+const toggleEdit = () => {
+    router.replace({ path: `/edit-article/${store.currentArticle!.id}`})
+}
+
 const logout = () => {
     store.logout()
     router.replace({ name: "Login" })
 }
+
+onMounted(async () => {
+    await store.reloadUser()
+})
 </script>
