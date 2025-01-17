@@ -358,4 +358,10 @@ class ApplicationTest {
         val result = sanitizeHtml(html)
         assertTrue(html.contains("table"))
     }
+
+    @Test
+    fun `test current platform`() {
+        val osname = System.getProperty("os.name")
+        println(osname)
+    }
 }

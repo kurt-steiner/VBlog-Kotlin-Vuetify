@@ -37,6 +37,13 @@
                 </Row>
 
                 <VBtn @click="register" color="primary" block>注册</VBtn>
+
+                <Row main-axis-size="max" main-axis-alignment="end">
+                    <router-link to="/login" replace>
+                        已有账户，可以登录? <VIcon icon="mdi-chevron-right"/>
+                    </router-link>
+                </Row>                
+                
             </VCardText>
             
         </VCard>
@@ -81,3 +88,9 @@ const register = async () => {
     router.replace({name: "Login"})
 }
 </script>
+
+<style lang="scss" scoped>
+a {
+    text-decoration: none;
+}
+</style>

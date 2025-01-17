@@ -15,16 +15,27 @@
             <VCardText v-html="article?.htmlContent"/>
         </VCard>
     </VFadeTransition>
+
+    <VFab app
+          :elevation="3"
+          color="primary"
+          icon="mdi-keyboard-backspace"
+          @click="goBack"/>
 </template>
 
 <script lang="ts" setup>
 import { computed, onMounted} from 'vue';
 import {useVBlogStore} from "@/store";
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 const store = useVBlogStore()
 
 const article = computed(() => store.currentArticle)
 const route = useRoute()
+const router = useRouter()
+
+const goBack = () => {
+    router.go(-1)
+}
 
 onMounted(async () => {
     const id = parseInt(route.params.id as string)

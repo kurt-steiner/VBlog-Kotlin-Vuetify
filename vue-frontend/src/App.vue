@@ -40,7 +40,7 @@
                            location="left" 
                            :elevation="10" 
                            temporary>
-            <template v-for="(route, index) in routes" :key="index">
+            <template v-for="route in routes" :key="route.path">
                 <VListItem nav :to="route.path">
                     <template #prepend>
                         <VIcon :icon="route.icon" size="large"/>

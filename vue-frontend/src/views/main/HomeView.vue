@@ -78,7 +78,7 @@
           icon="mdi-plus"/>
 
     <VBottomNavigation color="primary" absolute density="compact" v-model="query.status!">
-        <template v-for="(status, index) in allStatus" :key="index">
+        <template v-for="status in allStatus" :key="status.value">
             <VBtn @click="handleSwitchStatus">
                 <VIcon :icon="status.icon"/>
                 {{ status.text }} 
