@@ -22,7 +22,6 @@ object ArticleStatusSerializer: KSerializer<ArticleStatus> {
             0 -> ArticleStatus.Draft
             1 -> ArticleStatus.Published
             2 -> ArticleStatus.Dustbin
-            3 -> ArticleStatus.Deleted
             else -> throw BadRequestException("invalid status code")
         }
     }

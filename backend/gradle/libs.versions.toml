@@ -6,6 +6,7 @@ kotlin-version = "2.1.0"
 ktor-version = "3.0.2"
 logback-version = "1.4.14"
 postgres-version = "42.7.4"
+jsoup-version = "1.18.3"
 
 [libraries]
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor-version" }
@@ -30,7 +31,7 @@ logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "lo
 ktor-server-config-yaml = { module = "io.ktor:ktor-server-config-yaml-jvm", version.ref = "ktor-version" }
 ktor-server-test-host = { module = "io.ktor:ktor-server-test-host-jvm", version.ref = "ktor-version" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin-version" }
-
+jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup-version"}
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-version" }
 ktor = { id = "io.ktor.plugin", version.ref = "ktor-version" }

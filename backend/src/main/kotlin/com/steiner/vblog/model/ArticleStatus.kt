@@ -7,6 +7,5 @@ import kotlinx.serialization.Serializable
 enum class ArticleStatus(val code: Int) {
     Draft(0),
     Published(1),
-    Dustbin(2),
-    Deleted(3)
+    Dustbin(2)
 }

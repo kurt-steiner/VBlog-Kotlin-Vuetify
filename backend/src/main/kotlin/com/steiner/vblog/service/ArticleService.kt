@@ -14,6 +14,8 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.jsoup.Jsoup
+import org.jsoup.safety.Safelist
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.qualifier.named
@@ -38,7 +40,7 @@ class ArticleService(val database: Database): KoinComponent {
             insert {
                 it[title] = request.title
                 it[markdownContent] = request.markdownContent
-                it[htmlContent] = request.htmlContent
+                it[htmlContent] = sanitizeHtml(request.htmlContent)
                 it[categoryId] = request.categoryId
                 // summary
                 it[summary] = generateSummary(request.htmlContent)
@@ -99,7 +101,7 @@ class ArticleService(val database: Database): KoinComponent {
                 }
 
                 if (request.htmlContent != null) {
-                    it[htmlContent] = request.htmlContent
+                    it[htmlContent] = sanitizeHtml(request.htmlContent)
                     it[summary] = generateSummary(request.htmlContent)
                 }
 
@@ -117,8 +119,8 @@ class ArticleService(val database: Database): KoinComponent {
 
                         for (tag in request.tags) {
                             insert { column ->
-                                column[this.articleId] = articleId
-                                column[tagId] = tagId
+                                column[this.articleId] = request.id
+                                column[tagId] = tag.id
                             }
                         }
                     }
@@ -135,7 +137,7 @@ class ArticleService(val database: Database): KoinComponent {
 
     suspend fun findOne(articleId: Int): Article? = dbQuery(database) {
         with (Articles) {
-            selectAll().where(this.id eq id)
+            selectAll().where(this.id eq articleId)
                 .firstOrNull()?.let {
                     Article(
                         id = it[this.id].value,
@@ -177,7 +179,7 @@ class ArticleService(val database: Database): KoinComponent {
                 val flag2 = if (query.status != null) {
                     status eq query.status
                 } else {
-                    Op.TRUE
+                    status eq ArticleStatus.Published
                 }
 
                 val flag3 = if (query.tagId != null) {
@@ -199,7 +201,13 @@ class ArticleService(val database: Database): KoinComponent {
                     Op.TRUE
                 }
 
-                flag1 and flag2 and flag3 and flag4
+                val flag5 = if (query.title != null) {
+                    title.lowerCase() like "%${query.title.lowercase()}%"
+                } else {
+                    Op.TRUE
+                }
+
+                flag1 and flag2 and flag3 and flag4 and flag5
             }
                 .orderBy(column, order = order)
                 .limit(size)
@@ -230,6 +238,15 @@ class ArticleService(val database: Database): KoinComponent {
         return html.replace(Regex("<p\\s+.*?>"), "") // 移除 <p> 标签及其属性
             .replace(Regex("<br\\s*/?>"), "") // 移除 <br> 标签及其变体
             .replace(Regex("<.*?>"), "") // 移除所有其他 HTML 标签
+    }
+
+    fun sanitizeHtml(unsafeHtml: String): String {
+        // 使用 Jsoup 的 clean 方法与预定义的安全列表 Safelist.basic() 进行净化
+        val safelist = Safelist.relaxed()
+            .removeTags("script")
+            .removeTags("style")
+
+        return Jsoup.clean(unsafeHtml, safelist)
     }
 
     fun generateSummary(html: String): String {
