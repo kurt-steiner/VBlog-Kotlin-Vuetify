@@ -65,7 +65,16 @@ fun Application.configureKoin() {
             }
 
             single<String>(named("storage")) {
-                config.property("custom.storage").getString()
+                val osname = System.getProperty("os.name").lowercase()
+
+                if (osname.contains("win")) {
+                    config.property("custom.windows-storage").getString()
+                } else if (osname.contains("nix") || osname.contains("nux") || osname.contains("linux")) {
+                    config.property("custom.linux-storage").getString()
+                } else {
+                    throw Exception("running on a unknown os")
+                }
+
             }
 
             single(named("json")) {

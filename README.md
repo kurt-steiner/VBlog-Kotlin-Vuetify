@@ -38,7 +38,8 @@ custom:
   summary:
     max-length: 200
 
-  storage: "C:\\Users\\stein\\workspace\\VBlog\\storage"
+  windows-storage: "C:\\Users\\stein\\workspace\\VBlog\\storage"
+  unix-storage: "/mnt/c/Users/stein/workspace/VBlog/storage"
 ```
 
 1. postgresql 的 服务器地址
@@ -58,6 +59,9 @@ custom:
 
 java -jar build/libs/backend-all.jar
 ```
+
+如果你要编辑这个项目，由于这个项目使用 gradle 构建，而我把 gradle 的 zip 文件放到了本地，你需要在 `gradle/wrapper/gradle-wrapper.properties` 中修改 gradle 的下载地址为
+`distributionUrl=https\://services.gradle.org/distributions/gradle-8.9-bin.zip`
 
 ### 前端
 

@@ -20,4 +20,5 @@ custom:
   summary:
     max-length: 200
 
-  storage: "C:\\Users\\stein\\workspace\\VBlog\\storage"
+  windows-storage: "C:\\Users\\stein\\workspace\\VBlog\\storage"
+  unix-storage: "/mnt/c/Users/stein/workspace/VBlog/storage"
