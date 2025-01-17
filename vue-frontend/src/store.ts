@@ -1,8 +1,9 @@
 import { defineStore } from "pinia";
-import { type User, type Article, type Category, type ArticleShortcut, type PostArticleRequest, type PutArticleRequest, type PostCategoryRequest, type PutCategoryRequest, type PostTagRequest, type Tag, type PutTagRequest, type RegisterRequest, type ArticleQuery } from "./types";
+import { type User, type Article, type Category, type ArticleShortcut, type PostArticleRequest, type PutArticleRequest, type PostCategoryRequest, type PutCategoryRequest, type PostTagRequest, type Tag, type PutTagRequest, type RegisterRequest, type ArticleQuery, ArticleStatus, type PutUserRequest } from "./types";
 import * as api from "./api"
 
 import { sha256 } from "js-sha256";
+import { ref } from "vue";
 
 const useVBlogStore = defineStore("vblog", {
     state: () => {
@@ -52,14 +53,36 @@ const useVBlogStore = defineStore("vblog", {
             await api.register({...request, passwordHash})
         },
 
-        async reload(): Promise<void> {
+        async reloadUser(): Promise<void> {
             await this.loadCurrentUser()
             this.isLogined = true
-            await Promise.all([
-                this.loadArticles({}),
-                this.loadCategories(),
-                this.loadTags()
-            ])
+        },
+
+        async updateUser(request: PutUserRequest): Promise<void> {
+            if (request.passwordHash != undefined) {
+                request.passwordHash = sha256(request.passwordHash)
+            }
+            
+            await api.updateUser(request)
+            this.logout()
+        },
+
+        async reloadMissingData(status: ArticleStatus = ArticleStatus.Published): Promise<void> {
+            let futures: Promise<void>[] = []
+
+            if (this.articleShortcuts.length == 0) {
+                futures.push(this.loadArticles({status}))
+            }
+
+            if (this.categories.length == 0) {
+                futures.push(this.loadCategories())
+            }
+             
+            if (this.tags.length == 0) {
+                futures.push(this.loadTags())
+            }
+
+            await Promise.all(futures)
         },
 
         async loadCurrentUser(): Promise<void> {
@@ -75,11 +98,12 @@ const useVBlogStore = defineStore("vblog", {
 
         async loadCategories(): Promise<void> {
             this.categories = await api.findAllCategories()
-            this.categories.sort((left, right) => left.createTime < right.createTime ? 1 : -1)
+            this.categories.sort((left, right) => left.id < right.id ? -1 : 1)
         },
 
         async loadTags(): Promise<void> {
             this.tags = await api.findAllTags()
+            this.tags.sort((left, right) => left.id < right.id ? -1 : 1)
         },
 
         async insertArticle(request: PostArticleRequest): Promise<void> {
@@ -95,8 +119,14 @@ const useVBlogStore = defineStore("vblog", {
         },
 
         async updateArticle(request: PutArticleRequest): Promise<void> {
+            let index = this.articleShortcuts.findIndex(it => it.id == request.id)
             let article = await api.updateArticle(request)
-            let index = this.articleShortcuts.findIndex(it => it.id == article.id)
+
+            if (this.articleShortcuts[index].status != request.status) {
+                this.articleShortcuts.splice(index, 1)
+                return
+            }
+            
             this.articleShortcuts[index] = {
                 id: article.id,
                 title: article.title,
@@ -118,25 +148,41 @@ const useVBlogStore = defineStore("vblog", {
 
         async insertCategory(request: PostCategoryRequest): Promise<void> {
             let category = await api.insertCategory(request)
+            if (this.categories.some(it => it.id == category.id)) {
+                return
+            }
+
+
             this.categories.push(category)
-            this.categories.sort((left, right) => left.createTime < right.createTime ? 1 : -1)
+            this.categories.sort((left, right) => left.id < right.id ? -1 : 1)
         },
 
         async deleteCategory(id: number): Promise<void> {
             await api.deleteCategory(id)
             let index = this.categories.findIndex(it => it.id == id)
             this.categories.splice(index, 1)
+            this.articleShortcuts
+                .filter((article) => article.category?.id == id)
+                .forEach((article) => article.category = undefined)
         },
 
         async updateCategory(request: PutCategoryRequest): Promise<void> {
             let category = await api.updateCategory(request)
             let index = this.categories.findIndex(it => it.id == category.id)
             this.categories[index] = category
-            this.categories.sort((left, right) => left.createTime < right.createTime ? 1 : -1)
+            this.categories.sort((left, right) => left.id < right.id ? -1 : 1)
+
+            this.articleShortcuts
+                .filter((article) => article.category?.id == request.id)
+                .forEach((article) => article.category = category)
         },
 
         async insertTag(request: PostTagRequest): Promise<void> {
             let tag = await api.insertTag(request)
+            if (this.tags.some(it => it.id == tag.id)) {
+                return
+            }
+            
             this.tags.push(tag)
         },
 
@@ -144,15 +190,58 @@ const useVBlogStore = defineStore("vblog", {
             await api.deleteTag(id)
             let index = this.tags.findIndex(tag => tag.id == id)
             this.tags.splice(index, 1)
+
+            this.articleShortcuts
+                .filter((article) => article.tags.findIndex((tag) => tag.id == id) != -1)
+                .forEach((article) => {
+                    const index = article.tags.findIndex((tag) => tag.id == id)
+                    article.tags.splice(index, 1)
+                })
         },
 
         async updateTag(request: PutTagRequest): Promise<void> {
             let tag = await api.updateTag(request)
             let index = this.tags.findIndex(it => it.id == tag.id)
             this.tags[index] = tag
+
+            this.articleShortcuts
+                .filter((article) => article.tags.findIndex((tag) => tag.id == request.id))
+                .forEach((article) => {
+                    const index = article.tags.findIndex((tag) => tag.id == request.id)
+                    article.tags[index] = tag
+                })
         }
     }
     
 })
 
-export default useVBlogStore
+const useSnackbarStore = defineStore("snackbar", () => {
+    const actived = ref(false)
+    const message = ref("")
+    const status = ref<"success" | "error">("error")
+
+    const showSnackbar = (data: {message: string, status: "success" | "error"}) => {
+        actived.value = true
+        message.value = data.message
+        status.value = data.status
+
+        setTimeout(closeSnackbar, 3000)
+    }
+
+    const closeSnackbar = () => {
+        actived.value = false
+    }
+
+    return {
+        actived,
+        message,
+        status,
+        showSnackbar,
+        closeSnackbar
+    }
+})
+
+export {
+    useVBlogStore,
+    useSnackbarStore
+}
