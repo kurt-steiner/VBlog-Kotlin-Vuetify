@@ -1,7 +1,9 @@
 <template>
     <VCard class="article-card mb-1" width="100%" rounded="lg" hover :title="title">
-        <template #append v-if="category !== undefined">
-            <VChip border variant="elevated"> {{ category.name }} </VChip>
+        <template #append>
+            <template v-if="category !== undefined && category != null">
+                <VChip border variant="elevated"> {{ category.name }} </VChip>
+            </template>
         </template>
 
         <VCardSubtitle>

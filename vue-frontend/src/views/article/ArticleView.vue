@@ -2,7 +2,7 @@
     <VFadeTransition>
         <VCard v-if="article !== null" :title="article?.title">
 
-            <template #append v-if="article?.category !== undefined">
+            <template #append v-if="article?.category !== null">
                 <VChip border variant="elevated"> {{ article.category.name }} </VChip>
             </template>
 

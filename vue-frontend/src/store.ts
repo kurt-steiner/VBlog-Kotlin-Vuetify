@@ -163,7 +163,7 @@ const useVBlogStore = defineStore("vblog", {
             this.categories.splice(index, 1)
             this.articleShortcuts
                 .filter((article) => article.category?.id == id)
-                .forEach((article) => article.category = undefined)
+                .forEach((article) => article.category = null)
         },
 
         async updateCategory(request: PutCategoryRequest): Promise<void> {

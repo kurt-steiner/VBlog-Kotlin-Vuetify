@@ -1,5 +1,5 @@
 <template>
-    <VContainer class="category-setting-view">
+    <VContainer class="tag-setting-view">
         <VTable fixed-header>
             <thead>
                 <tr>

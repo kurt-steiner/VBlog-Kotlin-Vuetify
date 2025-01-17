@@ -31,7 +31,7 @@ export interface Article {
     markdownContent: string
     htmlContent: string
     summary: string
-    category?: Category
+    category: Category | null
     author: User
     publishDate: Date
     editTime: Date
@@ -43,7 +43,7 @@ export interface ArticleShortcut {
     id: number
     title: string
     summary: string
-    category?: Category
+    category: Category | null
     author: User
     publishDate: Date
     editTime: Date
