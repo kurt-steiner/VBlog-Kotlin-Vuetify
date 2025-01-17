@@ -5,179 +5,94 @@ import com.steiner.vblog.CategoryConfigure
 import com.steiner.vblog.TagConfigure
 import com.steiner.vblog.UserConfigure
 import com.steiner.vblog.request.*
+import com.steiner.vblog.util.emailPattern
+import com.steiner.vblog.util.limitLength
+import com.steiner.vblog.util.notBlank
+import com.steiner.vblog.util.validationChain
 import io.ktor.server.application.*
 import io.ktor.server.plugins.requestvalidation.*
-import java.util.regex.Pattern
 
 fun Application.configureValidation() {
     install(RequestValidation) {
         validate<LoginRequest> { request ->
-            if (request.name.isEmpty()) {
-                ValidationResult.Invalid("username cannot be empty")
-            }
-
-            if (request.passwordHash.isEmpty()) {
-                ValidationResult.Invalid("password cannot be empty")
-            }
-
-            ValidationResult.Valid
+            validationChain(
+                notBlank(request.name, "username"),
+                notBlank(request.passwordHash, "passwordHash")
+            )
         }
 
         validate<PostArticleRequest> { request ->
-            if (request.title.isEmpty()) {
-                ValidationResult.Invalid("title cannot be empty")
-            }
-
-            if (request.title.length > ArticleConfigure.TITLE_LENGTH) {
-                ValidationResult.Invalid("title too long")
-            }
-
-            if (request.markdownContent.isEmpty()) {
-                ValidationResult.Invalid("markdown content cannot be empty")
-            }
-
-            if (request.htmlContent.isEmpty()) {
-                ValidationResult.Invalid("html content cannot be empty")
-            }
-
-            ValidationResult.Valid
+            validationChain(
+                notBlank(request.title, "title"),
+                limitLength(request.title, maxLength = ArticleConfigure.TITLE_LENGTH, fieldName = "title"),
+                notBlank(request.markdownContent, "markdown content"),
+                notBlank(request.htmlContent, "html content")
+            )
         }
 
         validate<PostCategoryRequest> { request ->
-            if (request.name.isEmpty()) {
-                ValidationResult.Invalid("name cannot be empty")
-            }
-
-            if (request.name.length > CategoryConfigure.NAME_LENGTH) {
-                ValidationResult.Invalid("name too long")
-            }
-
-            ValidationResult.Valid
+            validationChain(
+                notBlank(request.name, "name"),
+                limitLength(request.name, maxLength = CategoryConfigure.NAME_LENGTH)
+            )
         }
 
         validate<PostTagRequest> { request ->
-            if (request.name.isEmpty()) {
-                ValidationResult.Invalid("name cannot be empty")
-            }
-
-            if (request.name.length > TagConfigure.NAME_LENGTH) {
-                ValidationResult.Invalid("name too long")
-            }
-
-            ValidationResult.Valid
+            validationChain(
+                notBlank(request.name, "name"),
+                limitLength(request.name, maxLength = TagConfigure.NAME_LENGTH)
+            )
         }
 
         validate<RegisterRequest> { request ->
-            if (request.name.isEmpty()) {
-                ValidationResult.Invalid("name cannot be empty")
-            }
-
-            if (request.name.length > UserConfigure.NAME_LENGTH) {
-                ValidationResult.Invalid("name too long")
-            }
-
-            if (request.passwordHash.isEmpty()) {
-                ValidationResult.Invalid("password hash cannot be null")
-            }
-
-            if (request.nickname != null && request.nickname.length > UserConfigure.NICKNAME_LENGTH) {
-                ValidationResult.Invalid("nickname too long")
-            }
-
-            if (request.email != null && request.email.length > UserConfigure.EMAIL_LENGTH) {
-                ValidationResult.Invalid("email too long")
-            }
-
-            ValidationResult.Valid
+            validationChain(
+                notBlank(request.name, "name"),
+                limitLength(request.name, maxLength = UserConfigure.NAME_LENGTH, fieldName = "name"),
+                notBlank(request.passwordHash, "password hash"),
+                notBlank(request.nickname, allowNull = true, fieldName = "nickname"),
+                limitLength(request.nickname, maxLength = UserConfigure.NICKNAME_LENGTH, allowNull = true, fieldName = "nickname"),
+                limitLength(request.email, maxLength = UserConfigure.EMAIL_LENGTH, allowNull = true, fieldName = "email"),
+                emailPattern(request.email, allowNull = true)
+            )
         }
 
         validate<PutArticleRequest> { request ->
-            if (request.title != null && request.title.length > ArticleConfigure.TITLE_LENGTH) {
-                ValidationResult.Invalid("title too long")
-            }
-
-            if (request.markdownContent != null && request.markdownContent.isEmpty()) {
-                ValidationResult.Invalid("markdown cannot be empty")
-            }
-
-            if (request.htmlContent != null && request.htmlContent.isEmpty()) {
-                ValidationResult.Invalid("html content cannot be empty")
-            }
-
-            ValidationResult.Valid
+            validationChain(
+                notBlank(request.title, allowNull = true, fieldName = "title"),
+                limitLength(request.title, maxLength = ArticleConfigure.TITLE_LENGTH, fieldName = "title", allowNull = true),
+                notBlank(request.markdownContent, allowNull = true, fieldName = "markdown content")
+            )
         }
 
         validate<PutCategoryRequest> { request ->
-            if (request.name.length > CategoryConfigure.NAME_LENGTH) {
-                ValidationResult.Invalid("name too long")
-            }
-
-            ValidationResult.Valid
+            validationChain(
+                notBlank(request.name, fieldName = "name"),
+                limitLength(request.name, fieldName = "name", maxLength = CategoryConfigure.NAME_LENGTH)
+            )
         }
 
         validate<PutTagRequest> { request ->
-            if (request.name.length > CategoryConfigure.NAME_LENGTH) {
-                ValidationResult.Invalid("name too long")
-            }
-
-            ValidationResult.Valid
+            validationChain(
+                notBlank(request.name, fieldName = "name"),
+                limitLength(request.name, fieldName = "name", maxLength = CategoryConfigure.NAME_LENGTH)
+            )
         }
 
         validate<PutUserRequest> { request ->
-            if (request.name != null) {
-                if (request.name.isEmpty()) {
-                    ValidationResult.Invalid("name cannot be empty")
-                }
+            validationChain(
+                notBlank(request.name, allowNull = true, fieldName = "name"),
+                limitLength(request.name, allowNull = true, fieldName = "name", maxLength = UserConfigure.NAME_LENGTH),
 
-                if (request.name.length > UserConfigure.NAME_LENGTH) {
-                    ValidationResult.Invalid("name too long")
-                }
-            }
+                notBlank(request.nickname, allowNull = true, fieldName = "nickname"),
+                limitLength(request.nickname, allowNull = true, fieldName = "nickname", maxLength = UserConfigure.NICKNAME_LENGTH),
 
-            if (request.nickname != null) {
-                if (request.nickname.isEmpty()) {
-                    ValidationResult.Invalid("nickname cannot be empty")
-                }
+                notBlank(request.passwordHash, allowNull = true, fieldName = "password hash"),
+                limitLength(request.passwordHash, allowNull = true, fieldName = "password hash", maxLength = UserConfigure.PASSWORD_LENGTH),
 
-                if (request.nickname.length > UserConfigure.NICKNAME_LENGTH) {
-                    ValidationResult.Invalid("nickname too long")
-                }
-            }
-
-            if (request.passwordHash != null) {
-                if (request.passwordHash.isEmpty()) {
-                    ValidationResult.Invalid("password hash cannot be empty")
-                }
-
-                if (request.passwordHash.length > UserConfigure.PASSWORD_LENGTH) {
-                    ValidationResult.Invalid("password hash too long")
-                }
-            }
-
-            if (request.email != null) {
-                if (request.email.isEmpty()) {
-                    ValidationResult.Invalid("email cannot be empty")
-                }
-
-                if (request.email.length > UserConfigure.EMAIL_LENGTH) {
-                    ValidationResult.Invalid("email too long")
-                }
-
-                val flag = Pattern.compile(
-                    "^(([\\w-]+\\.)+[\\w-]+|([a-zA-Z]|[\\w-]{2,}))@"
-                            + "((([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\\.([0-1]?"
-                            + "[0-9]{1,2}|25[0-5]|2[0-4][0-9])\\."
-                            + "([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\\.([0-1]?"
-                            + "[0-9]{1,2}|25[0-5]|2[0-4][0-9]))|"
-                            + "([a-zA-Z]+[\\w-]+\\.)+[a-zA-Z]{2,4})$"
-                ).matcher(request.email).matches()
-
-                if (!flag) {
-                    ValidationResult.Invalid("email format invalid")
-                }
-            }
-
-            ValidationResult.Valid
+                notBlank(request.email, allowNull = true, fieldName = "email"),
+                limitLength(request.email, allowNull = true, fieldName = "email", maxLength = UserConfigure.EMAIL_LENGTH),
+                emailPattern(request.email, allowNull = true)
+            )
         }
     }
 }
