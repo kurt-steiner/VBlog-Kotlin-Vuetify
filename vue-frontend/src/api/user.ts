@@ -7,6 +7,7 @@ export const register = async (request: RegisterRequest): Promise<void> => {
 
 export const currentUser = async (): Promise<User> => {
     let response = await authenticateInstance.get("/user")
+    response.data.data.registerTime = new Date(response.data.data.registerTime)
     return (response.data as Response<User>).data!
 }
 

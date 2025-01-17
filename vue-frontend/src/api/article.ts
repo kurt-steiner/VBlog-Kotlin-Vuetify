@@ -12,6 +12,8 @@ export const deleteArticle = async (id: number): Promise<void> => {
 
 export const updateArticle = async (request: PutArticleRequest): Promise<Article> => {
     let response = await authenticateInstance.put("/article", request)
+    response.data.data.publishDate = new Date(response.data.data.publishDate)
+    response.data.data.editTime = new Date(response.data.data.editTime)
     return (response.data as Response<Article>).data!
 }
 

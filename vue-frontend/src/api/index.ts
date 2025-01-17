@@ -1,15 +1,31 @@
 import axios from "axios";
 import router from "../router"
-import useVBlogStore from "../store";
+import {useVBlogStore, useSnackbarStore} from "../store";
 
 export const BACKEND_URL: string = import.meta.env.VITE_BACKEND_URL
 
-export const normalInstance = axios.create({
+const normalInstance = axios.create({
     baseURL: BACKEND_URL,
     headers: {
         "Content-Type": "application/json",
     }
 })
+
+const errorHandler = (error: any): any => {
+    const snackBarStore = useSnackbarStore()
+    snackBarStore.showSnackbar({
+        status: "error",
+        message: (error.response.data.message as string) || "Unknown error"
+    })
+
+    if (error.response.status === 401) {
+        const store = useVBlogStore()
+        store.logout()
+        router.replace({ name: "Login" })
+    }
+
+    return Promise.reject(error)
+}
 
 const authenticateInstance = axios.create({
     baseURL: BACKEND_URL,
@@ -33,19 +49,19 @@ authenticateInstance.interceptors.response.use(
     response => {
         return response
     },
-    error => {
-        if (error.response.status === 401) {
-            const store = useVBlogStore()
-            store.logout()
-            router.replace({ name: "Login" })
-        }
+    errorHandler
+)
 
-        return Promise.reject(error)
-    }
+normalInstance.interceptors.response.use(
+    response => {
+        return response
+    },
+    errorHandler
 )
 
 export {
-    authenticateInstance
+    authenticateInstance,
+    normalInstance
 }
 
 export * from "./article"

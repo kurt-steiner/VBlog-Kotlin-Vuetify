@@ -55,5 +55,4 @@ export enum ArticleStatus {
     Draft = 0,
     Published,
     Dustbin,
-    Deleted
 }
