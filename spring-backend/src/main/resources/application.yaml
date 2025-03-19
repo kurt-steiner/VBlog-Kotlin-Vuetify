@@ -1,0 +1,67 @@
+spring:
+  application:
+     name: spring-backend
+
+  jackson:
+    time-zone: Asia/Shanghai
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+
+postgres:
+  url: "jdbc:postgresql://localhost/vblog"
+  user: steiner
+  password: 779151714
+  driver: org.postgresql.Driver
+
+jwt:
+  domain: "https://jwt-provider-domain/"
+  audience: "jwt-audience"
+  realm: "ktor sample app"
+  secret: "secret"
+
+custom:
+  summary:
+    max-length: 200
+
+  windows-storage: "C:\\Users\\stein\\workspace\\VBlog\\storage"
+  unix-storage: "/mnt/c/Users/stein/workspace/VBlog/storage"
+
+  permit:
+    - /login
+    - /register
+    - /image/download/*
+    - /image/upload
+
+  authentication-header: "Authentication"
+  authorization-header: "Authorization"
+
+  table-metadata:
+    articles:
+      table-name: "articles"
+      title-length: 256
+      default-query-size: 20
+      default-query-page: 0
+      association-table-name: "article-tag"
+
+    categories:
+      table-name: "categories"
+      name-length: 64
+
+    tags:
+      table-name: "tags"
+      name-length: 64
+
+    image-items:
+      table-name: "image-items"
+      name-length: 4096
+      path-length: 4096
+
+    users:
+      table-name: "users"
+      name-length: 64
+      nickname-length: 64
+      password-length: 64
+      email-length: 64
+
+

@@ -1,0 +1,62 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.steiner.vblog.mapper.CategoryMapper">
+    <resultMap id="CategoryMap" type="com.steiner.vblog.model.Category">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="userId" column="user-id"/>
+        <result property="createTime" column="create-time"/>
+    </resultMap>
+
+    <update id="createTable" parameterType="com.steiner.vblog.table_metadata.CategoriesMetadata">
+        create table if not exists "${tableName}" (
+            "id" serial primary key,
+            "name" varchar(#{nameLength}) not null,
+            "create-time" timestamp default current_timestamp not null,
+            "user-id" int not null,
+            constraint "fk_categories_user-id__id" foreign key ("user-id") references "${referenceTableName}"("id") on delete restrict on update restrict
+        );
+
+        alter table "categories"
+        add constraint "categories_name_unique" unique ("name");
+    </update>
+    
+    <update id="dropTable" parameterType="com.steiner.vblog.table_metadata.CategoriesMetadata">
+        drop table if exists "${tableName}";
+    </update>
+    
+    <insert id="insertOne">
+        insert into "${metadata.tableName}"
+        ("name", "create-time", "user-id")
+        values
+        (#{request.name}, current_timestamp, #{request.userId});
+    </insert>
+
+    <delete id="deleteOne">
+        delete from "${metadata.tableName}" where "id" = #{id};
+    </delete>
+
+    <update id="updateOne">
+        update "${metadata.tableName}"
+        set "name" = #{request.name}
+        where "id" = #{request.id};
+    </update>
+
+    <select id="findOne" resultMap="CategoryMap">
+        select * from "${metadata.tableName}"
+        where "id" = #{id};
+    </select>
+
+    <select id="findAll" resultMap="CategoryMap">
+        select * from "${metadata.tableName}"
+        where
+
+        <if test="query.name != null">
+            "name" = #{query.name}
+        </if>
+
+        <if test="query.userId != null">
+            and "user-id" = #{query.userId}
+        </if>
+    </select>
+</mapper>

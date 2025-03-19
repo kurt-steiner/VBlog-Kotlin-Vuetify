@@ -1,0 +1,68 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.steiner.vblog.mapper.TagMapper">
+    <resultMap id="TagMap" type="com.steiner.vblog.model.Tag">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="userId" column="user-id"/>
+    </resultMap>
+
+    <update id="createTable" parameterType="com.steiner.vblog.table_metadata.TagsMetadata">
+        create table if not exists "${tableName}" (
+            "id" serial primary key,
+            "name" varchar(#{nameLength}) not null,
+            "user-id" int not null,
+            constraint "fk_tags_user-id__id" foreign key ("user-id") references "${referenceTableName}"("id") on delete restrict on update restrict
+        );
+
+    </update>
+
+    <update id="dropTable" parameterType="com.steiner.vblog.table_metadata.TagsMetadata">
+        drop table if exists "${tableName}";
+    </update>
+
+    <insert id="insertOne">
+        insert into "${metadata.tableName}"
+        ("name", "user-id")
+        values
+        (#{request.name}, #{request.userId});
+    </insert>
+
+    <delete id="deleteOne">
+        delete from "${metadata.tableName}"
+        where "id" = #{request.id};
+    </delete>
+
+    <update id="updateOne">
+        update "${metadata.tableName}"
+        set "name" = #{request.name}
+        where "id" = #{request.id};
+    </update>
+
+    <select id="findOne" resultMap="TagMap">
+        select * from "${metadata.tableName}"
+        where "id" = #{id};
+    </select>
+
+    <select id="findAll" resultMap="TagMap">
+        select * from "${metadata.tableName}"
+        where
+        <if test="query.name != null">
+            and "name" = #{query.name}
+        </if>
+
+        <if test="query.userId != null">
+            and "user-id" = #{query.userId}
+        </if>
+    </select>
+
+    <select id="findAllOfArticle" resultMap="TagMap">
+        with tag_ids as (
+            select "tag-id" from "${metadata.associationTableName}"
+            where "article-id" = #{articleId}
+        );
+
+        select * from "${metadata.tableName}"
+        where "id" in tag_ids;
+    </select>
+</mapper>

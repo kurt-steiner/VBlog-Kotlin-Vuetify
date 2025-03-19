@@ -1,0 +1,187 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.steiner.vblog.mapper.ArticleMapper">
+    <resultMap id="ArticleMap" type="com.steiner.vblog.model.article.Article">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="markdownContent" column="markdown-content"/>
+        <result property="summary" column="summary"/>
+        <result property="publishDate" column="publish-date"/>
+        <result property="editTime" column="edit-time"/>
+        <result property="status" column="status" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        
+        <association property="category" resultMap="com.steiner.vblog.mapper.CategoryMapper.CategoryMap">
+            <id property="id" column="category-id"/>
+        </association>
+        
+        <association property="author" resultMap="com.steiner.vblog.mapper.UserMapper.UserMap">
+            <id property="id" column="author-id"/>
+        </association>
+
+        <collection property="tags" ofType="com.steiner.vblog.model.Tag" resultMap="com.steiner.vblog.mapper.TagMapper.TagMap"/>
+    </resultMap>
+
+    <update id="createTable" parameterType="com.steiner.vblog.table_metadata.ArticlesMetadata">
+        create table if not exists "${tableName}" (
+            "id" serial primary key,
+            "title" varchar(#{titleLength}) not null,
+            "markdown-content" text not null,
+            "html-content" text not null,
+            "summary" text not null,
+            "category-id" int null,
+            "author-id" int not null,
+            "publish-date" timestamp not null,
+            "edit-time" timestamp not null,
+            "status" int not null,
+            constraint "fk_articles_category_id__id" foreign key ("category-id")
+            references "categories"("id")
+            on delete restrict
+            on update restrict,
+            constraint "fk_articles_author_id__id" foreign key ("author-id")
+            references "users"("id")
+            on delete restrict
+            on update restrict
+        );
+
+        create index idx_article_author_id ON "#{metadata.tableName}" ("author-id");
+    </update>
+
+    <update id="dropTable" parameterType="com.steiner.vblog.table_metadata.ArticlesMetadata">
+        drop table if exists "${tableName}";
+    </update>
+
+    <insert id="insertOne">
+        do $$
+        declare
+            now timestamp := current_timestamp;
+            returning_id: int
+        begin
+            insert into "${metadata.tableName}"
+                ("title", "markdown-content", "html-content", "summary", "category-id", "author-id", "publish-date", "edit-time", "status")
+            values (
+                #{request.title},
+                #{request.markdownContent},
+                #{request.htmlContent},
+                #{request.summary},
+                #{request.categoryId},
+                #{request.authorId},
+                now,
+                now,
+                #{request.status}
+            ) returning id into returning_id;
+
+            insert into "${metadata.associationTableName}"
+                ("article-id", "tag-id")
+            values
+            <foreach collection="#{request.tags}" item="tag" separator=",">
+                (returning_id, #{tag.id})
+            </foreach>
+        end
+        $$
+    </insert>
+
+    <delete id="deleteOne">
+        delete from "${metadata.tableName}" where id = #{id};
+    </delete>
+
+    <delete id="deleteAllOfAuthor">
+        delete from "${metadata.tableName}" where "author-id" = #{authorId};
+    </delete>
+
+    <update id="updateOne">
+        update "${metadata.tableName}"
+        set
+        <if test="request.title != null">
+            "title" = #{request.title},
+        </if>
+
+        <if test="request.markdownContent != null">
+            "markdown-content" = #{request.markdownContent},
+        </if>
+
+        <if test="request.htmlContent != null">
+            "html-content" = #{request.htmlContent},
+        </if>
+
+        <if test="request.categoryId != null">
+            "category-id" = #{request.categoryId},
+        </if>
+
+        <if test="request.status != null">
+            "status" = #{request.status}
+        </if>
+
+        where "id" = #{request.id};
+
+        delete from "${metadata.associationTableName}"
+        where "article-id" = #{request.id};
+
+        <if test="request.tags != null">
+            insert into "${metadata.associationTableName}"
+            ("article-id", "tag-id")
+            values
+            <foreach collection="request.tags" item="tag" separator=",">
+                (#{request.id}, #{tag.id})
+            </foreach>
+        </if>
+
+    </update>
+
+    <select id="findOne" resultMap="ArticleMap">
+        select * from "${metadata.tableName}"
+        where "id" = #{id};
+    </select>
+
+    <select id="findAll" resultMap="ArticleMap">
+        select * from "${metadata.tableName}"
+        where
+        "author-id" = #{query.authorId} and
+        <choose>
+            <when test="query.status != null">
+                "status" = #{query.status.code}
+            </when>
+
+            <otherwise>
+                "status" = 1
+            </otherwise>
+        </choose>
+
+        <if test="query.tagId != null">
+            and "id" in (
+            select "article-id" from "${metadata.associationTableName}"
+            where "tag-id" = #{query.tagId}
+            )
+        </if>
+
+        <if test="query.categoryId != null">
+            and "category-id" = #{query.categoryId}
+        </if>
+
+
+        <if test="query.title != null">
+            and lower("title") = lower(#{query.title})
+        </if>
+
+        <!-- order by-->
+        <choose>
+            <when test="query.sortBy != null">
+                order by "${query.sortBy.field}"
+
+                <if test="query.sortBy.reverse">
+                    desc
+                </if>
+            </when>
+
+            <otherwise>
+                order by "title"
+            </otherwise>
+        </choose>
+
+        limit #{limit}
+        offset #{page * size}
+    </select>
+    
+    <select id="totalPages" resultType="int">
+        select ceil(count(*) / #{size}) from "${metadata.tableName}"
+    </select>
+</mapper>

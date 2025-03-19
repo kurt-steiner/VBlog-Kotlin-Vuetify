@@ -1,0 +1,22 @@
+[versions]
+javajwt-version = "4.5.0"
+springboot-version = "3.4.2"
+springboot-dependency-management-version = "1.1.7"
+springboot-mybatis-version = "3.0.4"
+postgresql-version = "42.7.5"
+lombok-version = "1.18.36"
+
+[libraries]
+javajwt = { module = "com.auth0:java-jwt", version.ref = "javajwt-version" }
+springboot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security", version.ref = "springboot-version"}
+springboot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation", version.ref = "springboot-version"}
+springboot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "springboot-version"}
+springboot-starter-mybatis = { module = "org.mybatis.spring.boot:mybatis-spring-boot-starter", version.ref = "springboot-mybatis-version"}
+springboot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "springboot-version"}
+springboot-starter-mybatis-test = { module = "org.mybatis.spring.boot:mybatis-spring-boot-starter-test", version.ref = "springboot-mybatis-version"}
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql-version"}
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok-version"}
+
+[plugins]
+springboot = { id = "org.springframework.boot", version.ref = "springboot-version"}
+springboot-dependency-management = { id = "io.spring.dependency-management", version.ref = "springboot-dependency-management-version"}

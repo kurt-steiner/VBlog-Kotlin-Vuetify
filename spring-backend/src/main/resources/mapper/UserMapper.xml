@@ -1,0 +1,69 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.steiner.vblog.mapper.UserMapper">
+    <resultMap id="UserMap" type="com.steiner.vblog.model.User">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="nickname" column="nickname"/>
+        <result property="email" column="email"/>
+        <result property="registerTime" column="register-time"/>
+
+        <association property="avatar" resultMap="com.steiner.vblog.mapper.ImageItemMapper.ImageItemMap"/>
+    </resultMap>
+
+    <update id="createTable" parameterType="com.steiner.vblog.table_metadata.UsersMetadata">
+        create table if not exists "${tableName}" (
+            "id" serial primary key,
+            "name" varchar(#{nameLength}) not null,
+            "nickname" varchar(#{nicknameLength}) null,
+            "password-hash" char(#{passwordHashLength}) not null,
+            "email" varchar(#{emailLength}) null,
+            "register-time" timestamp default current_timestamp not null,
+            "avatar-id" int null,
+            constraint "fk_users_avatar-id__id" foreign key ("avatar-id") references "${associationTableName}"("id") on delete restrict on update restrict
+        );
+
+        alter table "${tableName}"
+        add constraint "users_name_unique" unique ("name");
+    </update>
+
+    <update id="dropTable" parameterType="com.steiner.vblog.table_metadata.UsersMetadata">
+        drop table if exists "${tableName}";
+    </update>
+
+    <insert id="insertOne">
+        insert into "${metadata.tableName}"
+        ("name", "password-hash", "nickname", "email", "avatar-id")
+
+        values (#{request.name}, #{request.passwordHash}, #{request.nickname}, #{request.email}, #{request.avatarId});
+    </insert>
+
+    <delete id="deleteOne">
+        delete from "${metadata.tableName}" where "id" = #{id};
+    </delete>
+
+    <update id="updateOne">
+        update "${metadata.tableName}"
+        set
+        <if test="request.name != null">
+            "name" = #{request.name},
+        </if>
+
+        <if test="request.nickname != null">
+            "nickname" = #{request.nickname},
+        </if>
+
+        <if test="request.passwordHash != null">
+            "password-hash" = #{request.passwordHash},
+        </if>
+
+        <if test="request.email != null">
+            "email" = #{request.email},
+        </if>
+
+        <if test="request.avatarId != null">
+            "avatar-id" = #{request.avatarId}
+        </if>
+        where "id" = #{request.id};
+    </update>
+</mapper>

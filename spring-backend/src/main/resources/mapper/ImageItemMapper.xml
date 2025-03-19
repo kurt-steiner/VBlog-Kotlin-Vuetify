@@ -1,0 +1,36 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.steiner.vblog.mapper.ImageItemMapper">
+    <resultMap id="ImageItemMap" type="com.steiner.vblog.model.ImageItem">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="path" column="path"/>
+    </resultMap>
+
+    <update id="createTable" parameterType="com.steiner.vblog.table_metadata.ImageItemsMetadata">
+        create table if not exists "${tableName}" (
+            "id" serial primary key,
+            "name" varchar(#{nameLength}) not null,
+            "path" varchar(#{pathLength}) not null
+        );
+
+        alter table "${tableName}"
+        add constraint "image-items_path_unique" unique ("path");
+    </update>
+
+    <update id="dropTable" parameterType="com.steiner.vblog.table_metadata.ImageItemsMetadata">
+        drop table if exists "${tableName}";
+    </update>
+
+    <insert id="insertOne">
+        insert into "${metadata.tableName}"
+        ("name", "path")
+        values
+        (#{name}, #{path});
+    </insert>
+
+    <select id="findOne" resultMap="ImageItemMap">
+        select * from "${metadata.tableName}"
+        where "id" = #{id};
+    </select>
+</mapper>

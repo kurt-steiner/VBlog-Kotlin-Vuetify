@@ -1,0 +1,29 @@
+package com.steiner.vblog.dto.request;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
+public final class PostUserRequest implements IRequest {
+    @Nonnull
+    public String name;
+
+    @Nonnull
+    public String passwordHash;
+
+    @Nullable
+    public String nickname;
+
+    @Nullable
+    public String email;
+
+    @Nullable
+    public Integer avatarId;
+
+    public PostUserRequest(@Nonnull String name, @Nonnull String passwordHash, @Nullable String nickname, @Nullable String email, @Nullable Integer avatarId) {
+        this.name = name;
+        this.passwordHash = passwordHash;
+        this.nickname = nickname;
+        this.email = email;
+        this.avatarId = avatarId;
+    }
+}
