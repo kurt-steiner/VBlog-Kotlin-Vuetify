@@ -1,8 +1,10 @@
 package com.steiner.vblog.model;
 
 import jakarta.annotation.Nonnull;
+import lombok.AllArgsConstructor;
 
-public final class Tag {
+@AllArgsConstructor
+public class Tag {
     public int id;
 
     @Nonnull
@@ -10,9 +12,4 @@ public final class Tag {
 
     public int userId;
 
-    public Tag(int id, @Nonnull String name, int userId) {
-        this.id = id;
-        this.name = name;
-        this.userId = userId;
-    }
 }

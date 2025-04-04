@@ -23,7 +23,7 @@ dependencies {
     implementation(libs.postgresql)
     implementation(libs.javajwt)
     implementation(libs.lombok)
-
+    implementation(libs.jsoup)
     annotationProcessor(libs.lombok)
 }
 

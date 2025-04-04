@@ -2,7 +2,7 @@ package com.steiner.vblog.dto.request;
 
 import jakarta.annotation.Nonnull;
 
-public final class LoginRequest implements IRequest {
+public class LoginRequest implements IRequest {
     @Nonnull
     public String name;
 

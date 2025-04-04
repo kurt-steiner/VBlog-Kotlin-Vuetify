@@ -5,6 +5,7 @@ springboot-dependency-management-version = "1.1.7"
 springboot-mybatis-version = "3.0.4"
 postgresql-version = "42.7.5"
 lombok-version = "1.18.36"
+jsoup-version = "1.18.3"
 
 [libraries]
 javajwt = { module = "com.auth0:java-jwt", version.ref = "javajwt-version" }
@@ -16,6 +17,7 @@ springboot-starter-test = { module = "org.springframework.boot:spring-boot-start
 springboot-starter-mybatis-test = { module = "org.mybatis.spring.boot:mybatis-spring-boot-starter-test", version.ref = "springboot-mybatis-version"}
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql-version"}
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok-version"}
+jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup-version"}
 
 [plugins]
 springboot = { id = "org.springframework.boot", version.ref = "springboot-version"}

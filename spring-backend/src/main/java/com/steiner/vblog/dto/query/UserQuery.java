@@ -1,12 +1,9 @@
 package com.steiner.vblog.dto.query;
 
 import jakarta.annotation.Nullable;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@NoArgsConstructor
-@Setter
-public final class UserQuery {
+@lombok.Builder
+public class UserQuery {
     @Nullable
     public String name;
 

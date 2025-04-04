@@ -1,0 +1,16 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.steiner.vblog.mapper.ArticleTagMapper">
+    <update id="createTable" parameterType="com.steiner.vblog.table_metadata.ArticleTagMetadata">
+        create table if not exists "${tableName}" (
+            "article-id" int not null,
+            "tag-id" int not null,
+            constraint "fk_article-tag_article-id__id" foreign key ("article-id") references "${articlesTableName}"("id") on delete cascade on update restrict,
+            constraint "fk_article-tag_tag-id__id" foreign key ("tag-id") references "${tagsTableName}"("id") on delete cascade on update restrict
+        );
+    </update>
+
+    <update id="dropTable" parameterType="com.steiner.vblog.table_metadata.ArticleTagMetadata">
+        drop table if exists "${tableName}";
+    </update>
+</mapper>

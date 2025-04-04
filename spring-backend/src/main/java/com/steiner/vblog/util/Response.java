@@ -1,22 +1,28 @@
 package com.steiner.vblog.util;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 public abstract class Response {
     public static class Ok<T> extends Response {
         @Nonnull
+        @JsonProperty("message")
         public final String message;
 
         @Nullable
+        @JsonProperty("data")
         public final T data;
 
-        public Ok(@Nonnull String message, @Nonnull T data) {
+        @JsonCreator
+        public Ok(@JsonProperty("message") @Nonnull String message,
+                  @JsonProperty("data") @Nonnull T data) {
             this.message = message;
             this.data = data;
         }
 
-        public Ok(@Nonnull String message) {
+        public Ok(@JsonProperty("message") @Nonnull String message) {
             this.message = message;
             this.data = null;
         }
@@ -24,9 +30,11 @@ public abstract class Response {
 
     public static class Err extends Response {
         @Nonnull
+        @JsonProperty("message")
         public final String message;
 
-        public Err(@Nonnull String message) {
+        @JsonCreator
+        public Err(@JsonProperty("message") @Nonnull String message) {
             this.message = message;
         }
     }

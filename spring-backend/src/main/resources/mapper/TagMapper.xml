@@ -10,9 +10,9 @@
     <update id="createTable" parameterType="com.steiner.vblog.table_metadata.TagsMetadata">
         create table if not exists "${tableName}" (
             "id" serial primary key,
-            "name" varchar(#{nameLength}) not null,
+            "name" varchar(${nameLength}) not null,
             "user-id" int not null,
-            constraint "fk_tags_user-id__id" foreign key ("user-id") references "${referenceTableName}"("id") on delete restrict on update restrict
+            constraint "fk_tags_user-id__id" foreign key ("user-id") references "${usersTableName}"("id") on delete restrict on update restrict
         );
 
     </update>
@@ -23,9 +23,10 @@
 
     <insert id="insertOne">
         insert into "${metadata.tableName}"
-        ("name", "user-id")
+            ("name", "user-id")
         values
-        (#{request.name}, #{request.userId});
+            (#{request.name}, #{request.userId})
+        returning "id"
     </insert>
 
     <delete id="deleteOne">
@@ -58,7 +59,7 @@
 
     <select id="findAllOfArticle" resultMap="TagMap">
         with tag_ids as (
-            select "tag-id" from "${metadata.associationTableName}"
+            select "tag-id" from "${metadata.articleTagTableName}"
             where "article-id" = #{articleId}
         );
 

@@ -3,7 +3,7 @@ package com.steiner.vblog.dto.request;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-public final class PutUserRequest implements IRequest {
+public class PutUserRequest implements IRequest {
     @Nonnull
     public Integer id;
 
@@ -21,6 +21,15 @@ public final class PutUserRequest implements IRequest {
 
     @Nullable
     public Integer avatarId;
+
+    public PutUserRequest() {
+        this.id = null;
+        this.name = null;
+         this.nickname = null;
+         this.passwordHash = null;
+         this.email = null;
+         this.avatarId = null;
+    }
 
     public PutUserRequest(@Nonnull Integer id, @Nullable String name, @Nullable String nickname, @Nullable String passwordHash, @Nullable String email, @Nullable Integer avatarId) {
         this.id = id;

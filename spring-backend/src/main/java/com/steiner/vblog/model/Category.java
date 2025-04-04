@@ -1,10 +1,10 @@
 package com.steiner.vblog.model;
 
 import jakarta.annotation.Nonnull;
+import lombok.AllArgsConstructor;
 
-import java.sql.Timestamp;
-
-public final class Category {
+@AllArgsConstructor
+public class Category {
     public int id;
 
     @Nonnull
@@ -14,11 +14,4 @@ public final class Category {
     public java.sql.Timestamp createTime;
 
     public int userId;
-
-    public Category(int id, @Nonnull String name, @Nonnull Timestamp createTime, int userId) {
-        this.id = id;
-        this.name = name;
-        this.createTime = createTime;
-        this.userId = userId;
-    }
 }

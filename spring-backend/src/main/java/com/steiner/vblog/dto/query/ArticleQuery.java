@@ -3,12 +3,9 @@ package com.steiner.vblog.dto.query;
 import com.steiner.vblog.model.article.ArticleSortBy;
 import com.steiner.vblog.model.article.ArticleStatus;
 import jakarta.annotation.Nullable;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@NoArgsConstructor
-@Setter
-public final class ArticleQuery {
+@lombok.Builder
+public class ArticleQuery {
     @Nullable
     public Integer authorId;
 
@@ -26,4 +23,7 @@ public final class ArticleQuery {
 
     @Nullable
     public ArticleSortBy sortBy;
+
+    public int page;
+    public int size;
 }

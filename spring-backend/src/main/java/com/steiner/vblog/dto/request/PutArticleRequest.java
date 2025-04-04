@@ -7,7 +7,7 @@ import jakarta.annotation.Nullable;
 
 import java.util.List;
 
-public final class PutArticleRequest {
+public class PutArticleRequest implements IRequest {
     @Nonnull
     public Integer id;
 
@@ -24,10 +24,24 @@ public final class PutArticleRequest {
     public Integer categoryId;
 
     @Nullable
+    public String summary;
+
+    @Nullable
     public List<Tag> tags;
 
     @Nullable
     public ArticleStatus status;
+
+    public PutArticleRequest() {
+        this.id = null;
+        this.title = null;
+        this.markdownContent = null;
+        this.htmlContent = null;
+        this.categoryId = null;
+        this.summary = null;
+        this.tags = null;
+        this.status = null;
+    }
 
     public PutArticleRequest(
             @Nonnull Integer id,
@@ -42,6 +56,7 @@ public final class PutArticleRequest {
         this.markdownContent = markdownContent;
         this.htmlContent = htmlContent;
         this.categoryId = categoryId;
+        this.summary = null;
         this.tags = tags;
         this.status = status;
     }

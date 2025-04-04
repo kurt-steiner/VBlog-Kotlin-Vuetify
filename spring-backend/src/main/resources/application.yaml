@@ -5,14 +5,16 @@ spring:
   jackson:
     time-zone: Asia/Shanghai
 
+  datasource:
+    url: "jdbc:postgresql://localhost/vblog"
+    username: "steiner"
+    password: "779151714"
+    driver-class-name: "org.postgresql.Driver"
+
 mybatis:
   mapper-locations: classpath:mapper/*.xml
-
-postgres:
-  url: "jdbc:postgresql://localhost/vblog"
-  user: steiner
-  password: 779151714
-  driver: org.postgresql.Driver
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 jwt:
   domain: "https://jwt-provider-domain/"
@@ -24,33 +26,45 @@ custom:
   summary:
     max-length: 200
 
+  initialize: false
   windows-storage: "C:\\Users\\stein\\workspace\\VBlog\\storage"
   unix-storage: "/mnt/c/Users/stein/workspace/VBlog/storage"
 
-  permit:
-    - /login
-    - /register
-    - /image/download/*
-    - /image/upload
+  token-prefix: "Bearer"
 
-  authentication-header: "Authentication"
-  authorization-header: "Authorization"
+  permit:
+    - "/login"
+    - "/register"
+    - "/image/download/*"
+    - "/image/upload"
 
   table-metadata:
+    article-tag:
+      table-name: "article-tag"
+      articles-table-name: "${custom.table-metadata.articles.table-name}"
+      tags-table-name: "${custom.table-metadata.tags.table-name}"
+
     articles:
       table-name: "articles"
       title-length: 256
+      summary-length: 200
       default-query-size: 20
       default-query-page: 0
-      association-table-name: "article-tag"
+      tags-table-name: "${custom.table-metadata.tags.table-name}"
+      article-tag-table-name: "${custom.table-metadata.article-tag.table-name}"
+      users-table-name: "${custom.table-metadata.users.table-name}"
+      categories-table-name: "${custom.table-metadata.categories.table-name}"
 
     categories:
       table-name: "categories"
       name-length: 64
+      users-table-name: "${custom.table-metadata.users.table-name}"
 
     tags:
       table-name: "tags"
       name-length: 64
+      users-table-name: "${custom.table-metadata.users.table-name}"
+
 
     image-items:
       table-name: "image-items"
@@ -61,7 +75,6 @@ custom:
       table-name: "users"
       name-length: 64
       nickname-length: 64
-      password-length: 64
+      password-hash-length: 64
       email-length: 64
-
-
+      image-items-table-name: "${custom.table-metadata.image-items.table-name}"

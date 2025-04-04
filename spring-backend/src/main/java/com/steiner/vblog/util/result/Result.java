@@ -7,41 +7,64 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public final class Result<T, E extends Throwable> {
+public class Result<T, E extends Throwable> {
+
+    private enum ResultType {
+        Ok,
+        Err
+    }
 
     public static <T, E extends Throwable> Result<T, E> Ok(@Nonnull T data) {
-        return new Result<>(data, null);
+        return new Result<>(data, null, ResultType.Ok);
+    }
+
+    public static <T, E extends Throwable> Result<T, E> Ok() {
+        return new Result<>(null, null, ResultType.Ok);
     }
 
     public static <T, E extends Throwable> Result<T, E> Err(@Nonnull E error) {
-        return new Result<>(null, error);
+        return new Result<>(null, error, ResultType.Err);
     }
 
-    private static <T, E extends Throwable, U> Result<U, E> Err(@Nonnull Result<T, E> result) {
-        if (result.isOk()) {
-            throw new UnsupportedException("cannot transform ok to error");
+    public static <T, E extends Throwable> Result<T, E> from(@Nonnull SupplierThrows<T, E> supplier) {
+        try {
+            @Nullable T result = supplier.supplier();
+            if (result == null) {
+                throw new NullPointerException("calling supplier() returns null");
+            }
+
+            return new Result<>(result, null, ResultType.Ok);
+        } catch (NullPointerException exception) {
+            throw exception;
+        } catch (Throwable throwable) {
+            @SuppressWarnings("unchecked")
+            E exception = (E) throwable;
+            return new Result<>(null, exception, ResultType.Err);
         }
-
-        return new Result<>(null, result.getError());
     }
 
-    @Nullable
-    public T data;
 
     @Nullable
-    public E error;
+    private final T data;
 
-    private Result(@Nullable T data, @Nullable E error) {
+    @Nullable
+    private final E error;
+
+    @Nonnull
+    private final ResultType resultType;
+
+    private Result(@Nullable T data, @Nullable E error, @Nonnull ResultType resultType) {
         this.data = data;
         this.error = error;
+        this.resultType = resultType;
     }
 
     public boolean isOk() {
-        return data != null;
+        return resultType == ResultType.Ok;
     }
 
     public boolean isErr() {
-        return error != null;
+        return resultType == ResultType.Err;
     }
 
     public void ifOk(@Nonnull Consumer<T> consumer) {
@@ -59,7 +82,7 @@ public final class Result<T, E extends Throwable> {
     @Nonnull
     public <U> Result<U, E> map(@Nonnull Function<T, U> function) {
         if (isOk()) {
-            return Result.Ok(function.apply(get()));
+            return Result.Ok(function.apply(data)); // do not use get(), the `Void` returns null
         } else {
             return Result.Err(this.getError());
         }
@@ -67,11 +90,15 @@ public final class Result<T, E extends Throwable> {
 
     @Nonnull
     public T get() {
-        if (isOk()) {
-            return data;
-        } else {
+        if (data == null) {
+            throw new UnsupportedException("cannot unwrap null value");
+        }
+
+        if (isErr()) {
             throw new UnsupportedException("cannot unwrap result err");
         }
+
+        return data;
     }
 
     @Nonnull
@@ -94,10 +121,14 @@ public final class Result<T, E extends Throwable> {
 
     @Nonnull
     public E getError() {
-        if (isErr()) {
-            return error;
-        } else {
+        if (error == null) {
+            throw new UnsupportedException("cannot unwrap null error");
+        }
+
+        if (isOk()) {
             throw new UnsupportedException("cannot unwrap result ok");
         }
+
+        return error;
     }
 }

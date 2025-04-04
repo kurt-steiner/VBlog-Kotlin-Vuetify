@@ -4,6 +4,7 @@ import com.steiner.vblog.model.article.Article;
 import com.steiner.vblog.dto.query.ArticleQuery;
 import com.steiner.vblog.dto.request.PostArticleRequest;
 import com.steiner.vblog.dto.request.PutArticleRequest;
+import com.steiner.vblog.model.article.ArticleShortcut;
 import com.steiner.vblog.table_metadata.ArticlesMetadata;
 import jakarta.annotation.Nonnull;
 import org.apache.ibatis.annotations.Mapper;
@@ -34,10 +35,9 @@ public interface ArticleMapper {
                               @Param("id") int id);
 
     @Nonnull
-    List<Article> findAll(@Param("metadata") @Nonnull ArticlesMetadata metadata,
-                          @Param("query") @Nonnull ArticleQuery query,
-                          @Param("page") int page,
-                          @Param("size") int size);
+    List<ArticleShortcut> findAll(@Param("metadata") @Nonnull ArticlesMetadata metadata,
+                                  @Param("query") @Nonnull ArticleQuery query);
+
 
     int totalPages(@Param("metadata") @Nonnull ArticlesMetadata metadata,
                    @Param("size") int size);

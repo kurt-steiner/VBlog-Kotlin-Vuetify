@@ -11,13 +11,13 @@
     <update id="createTable" parameterType="com.steiner.vblog.table_metadata.CategoriesMetadata">
         create table if not exists "${tableName}" (
             "id" serial primary key,
-            "name" varchar(#{nameLength}) not null,
+            "name" varchar(${nameLength}) not null,
             "create-time" timestamp default current_timestamp not null,
             "user-id" int not null,
-            constraint "fk_categories_user-id__id" foreign key ("user-id") references "${referenceTableName}"("id") on delete restrict on update restrict
+            constraint "fk_categories_user-id__id" foreign key ("user-id") references "${usersTableName}"("id") on delete restrict on update restrict
         );
 
-        alter table "categories"
+        alter table "${tableName}"
         add constraint "categories_name_unique" unique ("name");
     </update>
     
@@ -27,9 +27,10 @@
     
     <insert id="insertOne">
         insert into "${metadata.tableName}"
-        ("name", "create-time", "user-id")
+            ("name", "create-time", "user-id")
         values
-        (#{request.name}, current_timestamp, #{request.userId});
+            (#{request.name}, current_timestamp, #{request.userId})
+        returning "id"
     </insert>
 
     <delete id="deleteOne">

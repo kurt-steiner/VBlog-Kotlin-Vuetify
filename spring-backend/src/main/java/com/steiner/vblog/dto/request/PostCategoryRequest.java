@@ -2,7 +2,7 @@ package com.steiner.vblog.dto.request;
 
 import jakarta.annotation.Nonnull;
 
-public final class PostCategoryRequest implements IRequest {
+public class PostCategoryRequest implements IRequest {
     @Nonnull
     public String name;
 

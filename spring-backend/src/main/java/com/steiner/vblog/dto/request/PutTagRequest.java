@@ -1,10 +1,8 @@
 package com.steiner.vblog.dto.request;
 
 import jakarta.annotation.Nonnull;
-import lombok.AllArgsConstructor;
 
-@AllArgsConstructor
-public final class PutTagRequest {
+public class PutTagRequest implements IRequest {
     @Nonnull
     public Integer id;
 
@@ -14,5 +12,10 @@ public final class PutTagRequest {
     public PutTagRequest() {
         this.id = null;
         this.name = null;
+    }
+
+    public PutTagRequest(@Nonnull Integer id, @Nonnull String name) {
+        this.id = id;
+        this.name = name;
     }
 }

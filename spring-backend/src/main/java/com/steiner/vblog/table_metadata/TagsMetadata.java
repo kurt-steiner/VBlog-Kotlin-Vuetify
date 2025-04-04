@@ -2,22 +2,15 @@ package com.steiner.vblog.table_metadata;
 
 import jakarta.annotation.Nonnull;
 
-public final class TagsMetadata {
+@lombok.Builder
+public class TagsMetadata {
     @Nonnull
+    @lombok.NonNull
     public String tableName;
 
     @Nonnull
-    public String referenceTableName;
-
-    @Nonnull
-    public String associationTableName;
+    @lombok.NonNull
+    public String usersTableName;
 
     public int nameLength;
-
-    public TagsMetadata(@Nonnull String tableName, @Nonnull String referenceTableName, @Nonnull String associationTableName, int nameLength) {
-        this.tableName = tableName;
-        this.referenceTableName = referenceTableName;
-        this.associationTableName = associationTableName;
-        this.nameLength = nameLength;
-    }
 }

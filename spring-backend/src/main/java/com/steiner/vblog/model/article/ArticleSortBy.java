@@ -2,7 +2,7 @@ package com.steiner.vblog.model.article;
 
 import jakarta.annotation.Nonnull;
 
-public final class ArticleSortBy {
+public class ArticleSortBy {
     public enum SortBy {
         ByTitle("title"),
         ByPublishDate("publish-date"),

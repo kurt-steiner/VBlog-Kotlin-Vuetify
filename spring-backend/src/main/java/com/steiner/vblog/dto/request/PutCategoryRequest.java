@@ -2,7 +2,7 @@ package com.steiner.vblog.dto.request;
 
 import jakarta.annotation.Nonnull;
 
-public final class PutCategoryRequest implements IRequest {
+public class PutCategoryRequest implements IRequest {
     @Nonnull
     public Integer id;
 

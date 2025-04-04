@@ -10,8 +10,8 @@
     <update id="createTable" parameterType="com.steiner.vblog.table_metadata.ImageItemsMetadata">
         create table if not exists "${tableName}" (
             "id" serial primary key,
-            "name" varchar(#{nameLength}) not null,
-            "path" varchar(#{pathLength}) not null
+            "name" varchar(${nameLength}) not null,
+            "path" varchar(${pathLength}) not null
         );
 
         alter table "${tableName}"
@@ -24,9 +24,10 @@
 
     <insert id="insertOne">
         insert into "${metadata.tableName}"
-        ("name", "path")
+            ("name", "path")
         values
-        (#{name}, #{path});
+            (#{name}, #{path})
+        returning "id"
     </insert>
 
     <select id="findOne" resultMap="ImageItemMap">

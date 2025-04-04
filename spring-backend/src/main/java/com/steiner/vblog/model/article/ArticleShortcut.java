@@ -9,58 +9,53 @@ import jakarta.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.List;
 
-public final class ArticleShortcut {
+@lombok.Builder
+public class ArticleShortcut {
     @Nonnull
     public static ArticleShortcut fromArticle(@Nonnull Article article) {
-        return new ArticleShortcut(
-                article.id,
-                article.title,
-                article.summary,
-                article.category,
-                article.author,
-                article.publishDate,
-                article.editTime,
-                article.status,
-                article.tags
-        );
+        return ArticleShortcut.builder()
+                .id(article.id)
+                .title(article.title)
+                .summary(article.summary)
+                .category(article.category)
+                .author(article.author)
+                .publishDate(article.publishDate)
+                .editTime(article.editTime)
+                .status(article.status)
+                .tags(article.tags)
+                .build();
     }
-
 
     public int id;
 
     @Nonnull
+    @lombok.NonNull
     public String title;
 
     @Nonnull
+    @lombok.NonNull
     public String summary;
 
     @Nullable
     public Category category;
 
     @Nonnull
+    @lombok.NonNull
     public User author;
 
     @Nonnull
+    @lombok.NonNull
     public java.sql.Timestamp publishDate;
 
     @Nonnull
+    @lombok.NonNull
     public java.sql.Timestamp editTime;
 
     @Nonnull
+    @lombok.NonNull
     public ArticleStatus status;
 
     @Nonnull
+    @lombok.NonNull
     public List<Tag> tags;
-
-    private ArticleShortcut(int id, @Nonnull String title, @Nonnull String summary, @Nullable Category category, @Nonnull User author, @Nonnull Timestamp publishDate, @Nonnull Timestamp editTime, @Nonnull ArticleStatus status, @Nonnull List<Tag> tags) {
-        this.id = id;
-        this.title = title;
-        this.summary = summary;
-        this.category = category;
-        this.author = author;
-        this.publishDate = publishDate;
-        this.editTime = editTime;
-        this.status = status;
-        this.tags = tags;
-    }
 }

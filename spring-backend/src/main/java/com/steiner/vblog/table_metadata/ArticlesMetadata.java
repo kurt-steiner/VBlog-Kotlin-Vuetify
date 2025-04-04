@@ -2,22 +2,30 @@ package com.steiner.vblog.table_metadata;
 
 import jakarta.annotation.Nonnull;
 
-public final class ArticlesMetadata {
+@lombok.Builder
+public class ArticlesMetadata {
     @Nonnull
+    @lombok.NonNull
     public String tableName;
 
     @Nonnull
-    public String associationTableName;
+    @lombok.NonNull
+    public String articleTagTableName;
+
+    @Nonnull
+    @lombok.NonNull
+    public String usersTableName;
+
+    @Nonnull
+    @lombok.NonNull
+    public String categoriesTableName;
+
+    @Nonnull
+    @lombok.NonNull
+    public String tagsTableName;
 
     public int titleLength;
+    public int summaryLength;
     public int defaultQueryPage;
     public int defaultQuerySize;
-
-    public ArticlesMetadata(@Nonnull String tableName, @Nonnull String associationTableName, int titleLength, int defaultQueryPage, int defaultQuerySize) {
-        this.tableName = tableName;
-        this.associationTableName = associationTableName;
-        this.titleLength = titleLength;
-        this.defaultQueryPage = defaultQueryPage;
-        this.defaultQuerySize = defaultQuerySize;
-    }
 }

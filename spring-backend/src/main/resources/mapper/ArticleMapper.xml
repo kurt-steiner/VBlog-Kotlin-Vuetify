@@ -21,29 +21,48 @@
         <collection property="tags" ofType="com.steiner.vblog.model.Tag" resultMap="com.steiner.vblog.mapper.TagMapper.TagMap"/>
     </resultMap>
 
+    <resultMap id="ArticleShortcutMap" type="com.steiner.vblog.model.article.ArticleShortcut">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="summary" column="summary"/>
+        <result property="publishDate" column="publish-date"/>
+        <result property="editTime" column="edit-time"/>
+        <result property="status" column="status" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+
+        <association property="category" resultMap="com.steiner.vblog.mapper.CategoryMapper.CategoryMap">
+            <id property="id" column="category-id"/>
+        </association>
+
+        <association property="author" resultMap="com.steiner.vblog.mapper.UserMapper.UserMap">
+            <id property="id" column="author-id"/>
+        </association>
+
+        <collection property="tags" ofType="com.steiner.vblog.model.Tag" resultMap="com.steiner.vblog.mapper.TagMapper.TagMap"/>
+    </resultMap>
+
     <update id="createTable" parameterType="com.steiner.vblog.table_metadata.ArticlesMetadata">
         create table if not exists "${tableName}" (
             "id" serial primary key,
-            "title" varchar(#{titleLength}) not null,
+            "title" varchar(${titleLength}) not null,
             "markdown-content" text not null,
             "html-content" text not null,
-            "summary" text not null,
+            "summary" varchar(${summaryLength}) not null,
             "category-id" int null,
             "author-id" int not null,
             "publish-date" timestamp not null,
             "edit-time" timestamp not null,
             "status" int not null,
             constraint "fk_articles_category_id__id" foreign key ("category-id")
-            references "categories"("id")
+            references "${categoriesTableName}"("id")
             on delete restrict
             on update restrict,
             constraint "fk_articles_author_id__id" foreign key ("author-id")
-            references "users"("id")
+            references "${usersTableName}"("id")
             on delete restrict
             on update restrict
         );
 
-        create index idx_article_author_id ON "#{metadata.tableName}" ("author-id");
+        create index idx_article_author_id ON "${tableName}" ("author-id");
     </update>
 
     <update id="dropTable" parameterType="com.steiner.vblog.table_metadata.ArticlesMetadata">
@@ -70,12 +89,14 @@
                 #{request.status}
             ) returning id into returning_id;
 
-            insert into "${metadata.associationTableName}"
+            insert into "${metadata.articleTagTableName}"
                 ("article-id", "tag-id")
             values
             <foreach collection="#{request.tags}" item="tag" separator=",">
                 (returning_id, #{tag.id})
             </foreach>
+
+
         end
         $$
     </insert>
@@ -111,13 +132,15 @@
             "status" = #{request.status}
         </if>
 
+        "edit-time" = current_timestamp
+
         where "id" = #{request.id};
 
-        delete from "${metadata.associationTableName}"
+        delete from "${metadata.articleTagTableName}"
         where "article-id" = #{request.id};
 
         <if test="request.tags != null">
-            insert into "${metadata.associationTableName}"
+            insert into "${metadata.articleTagTableName}"
             ("article-id", "tag-id")
             values
             <foreach collection="request.tags" item="tag" separator=",">
@@ -132,7 +155,7 @@
         where "id" = #{id};
     </select>
 
-    <select id="findAll" resultMap="ArticleMap">
+    <select id="findAll" resultMap="ArticleShortcutMap">
         select * from "${metadata.tableName}"
         where
         "author-id" = #{query.authorId} and
@@ -148,7 +171,7 @@
 
         <if test="query.tagId != null">
             and "id" in (
-            select "article-id" from "${metadata.associationTableName}"
+            select "article-id" from "${metadata.articleTagTableName}"
             where "tag-id" = #{query.tagId}
             )
         </if>
@@ -177,8 +200,8 @@
             </otherwise>
         </choose>
 
-        limit #{limit}
-        offset #{page * size}
+        limit #{query.size}
+        offset #{query.page * query.size}
     </select>
     
     <select id="totalPages" resultType="int">

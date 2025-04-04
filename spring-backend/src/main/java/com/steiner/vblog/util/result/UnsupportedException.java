@@ -7,4 +7,8 @@ public class UnsupportedException extends RuntimeException {
   public UnsupportedException(String message, Throwable cause) {
     super(message, cause);
   }
+
+  public UnsupportedException(Throwable cause) {
+    super(cause);
+  }
 }

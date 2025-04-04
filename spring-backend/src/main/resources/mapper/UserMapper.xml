@@ -8,19 +8,22 @@
         <result property="email" column="email"/>
         <result property="registerTime" column="register-time"/>
 
-        <association property="avatar" resultMap="com.steiner.vblog.mapper.ImageItemMapper.ImageItemMap"/>
+        <association property="avatar"
+                     column="avatar-id"
+                     columnPrefix="image-item"
+                     resultMap="com.steiner.vblog.mapper.ImageItemMapper.ImageItemMap"/>
     </resultMap>
 
     <update id="createTable" parameterType="com.steiner.vblog.table_metadata.UsersMetadata">
         create table if not exists "${tableName}" (
             "id" serial primary key,
-            "name" varchar(#{nameLength}) not null,
-            "nickname" varchar(#{nicknameLength}) null,
-            "password-hash" char(#{passwordHashLength}) not null,
-            "email" varchar(#{emailLength}) null,
+            "name" varchar(${nameLength}) not null,
+            "nickname" varchar(${nicknameLength}) null,
+            "password-hash" char(${passwordHashLength}) not null,
+            "email" varchar(${emailLength}) null,
             "register-time" timestamp default current_timestamp not null,
             "avatar-id" int null,
-            constraint "fk_users_avatar-id__id" foreign key ("avatar-id") references "${associationTableName}"("id") on delete restrict on update restrict
+            constraint "fk_users_avatar-id__id" foreign key ("avatar-id") references "${imageItemsTableName}"("id") on delete restrict on update restrict
         );
 
         alter table "${tableName}"
@@ -33,9 +36,9 @@
 
     <insert id="insertOne">
         insert into "${metadata.tableName}"
-        ("name", "password-hash", "nickname", "email", "avatar-id")
-
-        values (#{request.name}, #{request.passwordHash}, #{request.nickname}, #{request.email}, #{request.avatarId});
+            ("name", "password-hash", "nickname", "email", "avatar-id")
+        values (#{request.name}, #{request.passwordHash}, #{request.nickname}, #{request.email}, #{request.avatarId})
+        returning "id"
     </insert>
 
     <delete id="deleteOne">
@@ -66,4 +69,37 @@
         </if>
         where "id" = #{request.id};
     </update>
+
+    <select id="findOne" resultMap="UserMap">
+        select
+            "id", "name", "nickname", "email", "register-time", "avatar-id"
+        from
+            "${metadata.tableName}"
+        where
+            "id" = #{id}
+
+    </select>
+
+    <select id="findAll" resultMap="UserMap">
+        select
+            "id", "name", "nickname", "email", "register-time", "avatar-id"
+        from
+            "${metadata.tableName}"
+        where
+        <if test="query.name != null">
+            "name" = #{query.name}
+        </if>
+
+        <if test="query.nickname != null">
+            and "nickname" = #{query.nickname}
+        </if>
+
+        <if test="query.email != null">
+            and "email" = #{query.email}
+        </if>
+
+        <if test="query.passwordHash != null">
+            and "password-hash" = #{query.passwordHash}
+        </if>
+    </select>
 </mapper>

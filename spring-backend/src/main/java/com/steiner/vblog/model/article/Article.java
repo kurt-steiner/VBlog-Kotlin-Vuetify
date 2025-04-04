@@ -6,55 +6,51 @@ import com.steiner.vblog.model.User;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
 import java.util.List;
 
-@Builder
-@NoArgsConstructor
+@lombok.Builder
 @AllArgsConstructor
-public final class Article {
+public class Article {
     public int id;
 
-    @NonNull
     @Nonnull
+    @lombok.NonNull
     public String title;
 
-    @NonNull
     @Nonnull
+    @lombok.NonNull
     public String markdownContent;
 
-    @NonNull
     @Nonnull
+    @lombok.NonNull
     public String htmlContent;
 
     @Nonnull
+    @lombok.NonNull
     public String summary;
 
     @Nullable
     public Category category;
 
-    @NotNull
     @Nonnull
+    @lombok.NonNull
     public User author;
 
-    @NotNull
     @Nonnull
+    @lombok.NonNull
     public java.sql.Timestamp publishDate;
 
-    @NotNull
     @Nonnull
+    @lombok.NonNull
     public java.sql.Timestamp editTime;
 
-    @NotNull
     @Nonnull
+    @lombok.NonNull
     public ArticleStatus status;
 
-    @NotNull
     @Nonnull
+    @lombok.NonNull
     public List<Tag> tags;
 }
