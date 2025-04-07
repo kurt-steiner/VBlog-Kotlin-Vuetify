@@ -6,7 +6,6 @@ import com.steiner.vblog.dto.request.*;
 import com.steiner.vblog.model.User;
 import com.steiner.vblog.model.article.ArticleStatus;
 import com.steiner.vblog.util.Response;
-import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
@@ -95,13 +94,15 @@ public class ApiTest {
                     .body(String.class);
         });
 
-        PostArticleRequest postArticleRequest = PostArticleRequest.builder()
-                .title("hello")
-                .htmlContent("<h1> Hello World </h1>")
-                .markdownContent("# Hello World")
-                .status(ArticleStatus.Published)
-                .authorId(currentUser.id)
-                .build();
+        PostArticleRequest postArticleRequest = new PostArticleRequest(
+                "hello",
+                "# Hello World",
+                "<h1> Hello World </h1>",
+                null,
+                null,
+                ArticleStatus.Published,
+                1
+        );
 
         client.post()
                 .uri("http://localhost:8080/article")

@@ -22,7 +22,7 @@ public class ImageItemController {
     ImageItemService service;
 
     @PostMapping("/upload")
-    public Response.Ok<ImageItem> uploadImage(@RequestParam("file")MultipartFile image) {
+    public Response.Ok<ImageItem> uploadImage(@RequestParam("file") MultipartFile image) {
         ImageItem imageItem = service.insertOne(image);
         return new Response.Ok<>("upload success", imageItem);
     }

@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -47,8 +48,14 @@ public class ArticleService {
         request.htmlContent = sanitizeHtml(request.htmlContent);
         request.summary = generateSummary(request.htmlContent);
 
-        int id = mapper.insertOne(metadata, request);
-        return mapper.findOne(metadata, id)
+        int result = mapper.insertOne(metadata, request);
+        if (result < 0) {
+            throw new ServerInternalException("insert article failed");
+        }
+
+        Objects.requireNonNull(request.returningId);
+
+        return mapper.findOne(metadata, request.returningId)
                 .orElseThrow(() -> new ServerInternalException("unwrap optional failed"));
     }
 

@@ -15,6 +15,13 @@ mybatis:
   mapper-locations: classpath:mapper/*.xml
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    log-prefix: MYBATIS-
+    lazy-loading-enabled: false
+  type-handlers-package: com.steiner.vblog.util.typehandler
+
+logging:
+  level:
+    com.steiner.vblog.mapper: TRACE
 
 jwt:
   domain: "https://jwt-provider-domain/"

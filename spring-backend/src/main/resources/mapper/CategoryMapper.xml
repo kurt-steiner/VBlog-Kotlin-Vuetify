@@ -30,7 +30,10 @@
             ("name", "create-time", "user-id")
         values
             (#{request.name}, current_timestamp, #{request.userId})
-        returning "id"
+
+        <selectKey keyProperty="request.returningId" resultType="int" order="AFTER">
+            select currval(pg_get_serial_sequence('${metadata.tableName}', 'id')) AS id
+        </selectKey>
     </insert>
 
     <delete id="deleteOne">
@@ -50,14 +53,15 @@
 
     <select id="findAll" resultMap="CategoryMap">
         select * from "${metadata.tableName}"
-        where
+        <where>
+            <if test="query.name != null">
+                and "name" = #{query.name}
+            </if>
 
-        <if test="query.name != null">
-            "name" = #{query.name}
-        </if>
+            <if test="query.userId != null">
+                and "user-id" = #{query.userId}
+            </if>
+        </where>
 
-        <if test="query.userId != null">
-            and "user-id" = #{query.userId}
-        </if>
     </select>
 </mapper>

@@ -38,7 +38,10 @@
         insert into "${metadata.tableName}"
             ("name", "password-hash", "nickname", "email", "avatar-id")
         values (#{request.name}, #{request.passwordHash}, #{request.nickname}, #{request.email}, #{request.avatarId})
-        returning "id"
+
+        <selectKey keyProperty="request.returningId" resultType="int" order="AFTER">
+            select currval(pg_get_serial_sequence('${metadata.tableName}', 'id')) AS id
+        </selectKey>
     </insert>
 
     <delete id="deleteOne">
@@ -85,21 +88,23 @@
             "id", "name", "nickname", "email", "register-time", "avatar-id"
         from
             "${metadata.tableName}"
-        where
-        <if test="query.name != null">
-            "name" = #{query.name}
-        </if>
+        <where>
+            <if test="query.name != null">
+                and "name" = #{query.name}
+            </if>
 
-        <if test="query.nickname != null">
-            and "nickname" = #{query.nickname}
-        </if>
+            <if test="query.nickname != null">
+                and "nickname" = #{query.nickname}
+            </if>
 
-        <if test="query.email != null">
-            and "email" = #{query.email}
-        </if>
+            <if test="query.email != null">
+                and "email" = #{query.email}
+            </if>
 
-        <if test="query.passwordHash != null">
-            and "password-hash" = #{query.passwordHash}
-        </if>
+            <if test="query.passwordHash != null">
+                and "password-hash" = #{query.passwordHash}
+            </if>
+        </where>
+
     </select>
 </mapper>

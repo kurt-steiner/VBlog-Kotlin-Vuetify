@@ -1,6 +1,7 @@
 package com.steiner.vblog.service;
 
 import com.steiner.vblog.Constants;
+import com.steiner.vblog.dto.request.PostImageItemRequest;
 import com.steiner.vblog.exception.ServerInternalException;
 import com.steiner.vblog.mapper.ImageItemMapper;
 import com.steiner.vblog.model.ImageItem;
@@ -17,6 +18,7 @@ import java.io.*;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -41,6 +43,9 @@ public class ImageItemService {
 
         String filenameEncoded =  "%s.%s".formatted(dateString, filename);
         String absolutePath = Paths.get(storagePath, filenameEncoded).toFile().getAbsolutePath();
+
+        PostImageItemRequest request = new PostImageItemRequest(filenameEncoded, absolutePath);
+
         File targetFile = new File(absolutePath);
         if (!targetFile.exists()) {
             try {
@@ -58,8 +63,14 @@ public class ImageItemService {
 
             // TODO maybe I should create a thread pool
             transferFile(inputStream, outputStream);
-            int id = mapper.insertOne(metadata, filename, absolutePath);
-            return mapper.findOne(metadata, id)
+            int result = mapper.insertOne(metadata, request);
+
+            if (result < 0) {
+                throw new ServerInternalException("insert image item failed");
+            }
+
+            Objects.requireNonNull(request.returningId);
+            return mapper.findOne(metadata, request.returningId)
                     .orElseThrow(() -> new ServerInternalException("unwrap optional failed"));
         } catch (IOException exception) {
             throw new ServerInternalException(exception);

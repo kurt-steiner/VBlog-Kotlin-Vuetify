@@ -1,5 +1,6 @@
 package com.steiner.vblog.mapper;
 
+import com.steiner.vblog.model.Tag;
 import com.steiner.vblog.model.article.Article;
 import com.steiner.vblog.dto.query.ArticleQuery;
 import com.steiner.vblog.dto.request.PostArticleRequest;
@@ -11,6 +12,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Mapper
@@ -20,8 +22,26 @@ public interface ArticleMapper {
 
 
     // when calling insertOne, the request is already validated by service
-    int insertOne(@Param("metadata") @Nonnull ArticlesMetadata metadata,
-                  @Param("request") @Nonnull PostArticleRequest request);
+    default int insertOne(@Param("metadata") @Nonnull ArticlesMetadata metadata,
+                          @Param("request") @Nonnull PostArticleRequest request) {
+        int result = insertOneArticle(metadata, request);
+        if (result < 0) {
+            return result;
+        }
+
+        if (request.tags != null) {
+            Objects.requireNonNull(request.returningId);
+            insertAssociation(metadata, request);
+        }
+
+        return 1;
+    }
+
+    int insertOneArticle(@Param("metadata") @Nonnull ArticlesMetadata metadata,
+                         @Param("request") @Nonnull PostArticleRequest request);
+
+    void insertAssociation(@Param("metadata") @Nonnull ArticlesMetadata metadata,
+                          @Param("request") @Nonnull PostArticleRequest request);
 
     void deleteOne(@Param("metadata") @Nonnull ArticlesMetadata metadata,
                    @Param("id") int id);
@@ -41,4 +61,7 @@ public interface ArticleMapper {
 
     int totalPages(@Param("metadata") @Nonnull ArticlesMetadata metadata,
                    @Param("size") int size);
+
+    List<Tag> findAllTags(@Param("metadata") @Nonnull ArticlesMetadata metadata,
+                          @Param("id") int id);
 }

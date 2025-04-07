@@ -10,7 +10,7 @@
     <update id="createTable" parameterType="com.steiner.vblog.table_metadata.TagsMetadata">
         create table if not exists "${tableName}" (
             "id" serial primary key,
-            "name" varchar(${nameLength}) not null,
+            "name" varchar(${nameLength}) unique not null,
             "user-id" int not null,
             constraint "fk_tags_user-id__id" foreign key ("user-id") references "${usersTableName}"("id") on delete restrict on update restrict
         );
@@ -26,7 +26,10 @@
             ("name", "user-id")
         values
             (#{request.name}, #{request.userId})
-        returning "id"
+
+        <selectKey keyProperty="request.returningId" resultType="int" order="AFTER">
+            select currval(pg_get_serial_sequence('${metadata.tableName}', 'id')) AS id
+        </selectKey>
     </insert>
 
     <delete id="deleteOne">
@@ -47,14 +50,15 @@
 
     <select id="findAll" resultMap="TagMap">
         select * from "${metadata.tableName}"
-        where
-        <if test="query.name != null">
-            and "name" = #{query.name}
-        </if>
+        <where>
+            <if test="query.name != null">
+                and "name" = #{query.name}
+            </if>
 
-        <if test="query.userId != null">
-            and "user-id" = #{query.userId}
-        </if>
+            <if test="query.userId != null">
+                and "user-id" = #{query.userId}
+            </if>
+        </where>
     </select>
 
     <select id="findAllOfArticle" resultMap="TagMap">

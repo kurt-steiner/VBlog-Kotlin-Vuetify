@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -36,8 +37,13 @@ public class CategoryService {
     public Category insertOne(@Nonnull PostCategoryRequest request) {
         postValidator.validate(request);
 
-        int id = mapper.insertOne(metadata, request);
-        return mapper.findOne(metadata, id)
+        int result = mapper.insertOne(metadata, request);
+        if (result < 0) {
+            throw new ServerInternalException("insert category failed");
+        }
+
+        Objects.requireNonNull(request.returningId);
+        return mapper.findOne(metadata, request.returningId)
                 .orElseThrow(() -> new ServerInternalException("unwrap optional failed"));
     }
 

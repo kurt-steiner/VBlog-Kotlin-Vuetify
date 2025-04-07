@@ -1,5 +1,6 @@
 package com.steiner.vblog.mapper;
 
+import com.steiner.vblog.dto.request.PostImageItemRequest;
 import com.steiner.vblog.model.ImageItem;
 import com.steiner.vblog.table_metadata.ImageItemsMetadata;
 import jakarta.annotation.Nonnull;
@@ -14,8 +15,7 @@ public interface ImageItemMapper {
     void dropTable(@Nonnull ImageItemsMetadata metadata);
 
     int insertOne(@Param("metadata") @Nonnull ImageItemsMetadata metadata,
-                  @Param("name") @Nonnull String name,
-                  @Param("path") @Nonnull String path);
+                  @Param("request") @Nonnull PostImageItemRequest request);
 
     Optional<ImageItem> findOne(@Param("metadata") @Nonnull ImageItemsMetadata metadata,
                                 @Param("id") int id);

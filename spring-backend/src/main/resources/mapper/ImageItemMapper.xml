@@ -22,12 +22,15 @@
         drop table if exists "${tableName}";
     </update>
 
-    <insert id="insertOne">
+    <insert id="insertOne" useGeneratedKeys="true">
         insert into "${metadata.tableName}"
             ("name", "path")
         values
-            (#{name}, #{path})
-        returning "id"
+            (#{request.name}, #{request.path})
+
+        <selectKey keyProperty="request.returningId" resultType="int" order="AFTER">
+            select currval(pg_get_serial_sequence('${metadata.tableName}', 'id')) AS id
+        </selectKey>
     </insert>
 
     <select id="findOne" resultMap="ImageItemMap">
